@@ -29,3 +29,23 @@ If you've installed the PSP toolchain in a user writable location use:
 ```
 ./pacman.sh
 ```
+
+## Usage
+
+Here is how to use ``psp-pacman`` and ``psp-makepkg``.
+
+### Installing a package
+
+Installing a ``*.pkg.tar.gz`` package with a PSP library can be done with:
+```
+psp-pacman -U package-name.pkg.tar.gz
+```
+
+### Building a package
+
+Building a package requires a PSPBUILD script. Here is [an example](https://git.archlinux.org/pacman.git/plain/proto/PKGBUILD.proto) and [some documentation on which options are available](https://wiki.archlinux.org/index.php/PKGBUILD). Do **not** called it PKGBUILD, though, use PSPBUILD instead.
+
+Packages can be build by running the following command in a directory with a PSPBUILD file:
+```
+psp-makepkg
+```
