@@ -12,8 +12,11 @@ fi
 
 ## Use sudo if the current user doesn't own $PSPDEV
 if ! touch "${PSPDEV}" >/dev/null 2>&1; then
-    sudo "$0" "$@"
-    exit $?
+    ## And only when not using the T or Q option
+    if ! [[ $1 = -@(T|Q)*([[:alpha:]]) ]]; then
+        sudo "$0" "$@"
+        exit $?
+    fi
 fi
 
 ## Run pacman
