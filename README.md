@@ -38,7 +38,7 @@ Here is how to use ``psp-pacman`` and ``psp-makepkg``.
 
 Installing a ``*.pkg.tar.gz`` package with a PSP library can be done with:
 ```
-psp-pacman -U package-name.pkg.tar.gz
+psp-pacman -U package-name-1.0.2.pkg.tar.gz
 ```
 
 ### Building a package
@@ -48,4 +48,9 @@ Building a package requires a ``PSPBUILD`` script. Here is [an example](https://
 Packages can be build by running the following command in a directory with a PSPBUILD file in it:
 ```
 psp-makepkg
+```
+
+This will create a file called something like ``package-name-1.0.2.pkg.tar.gz``. This file can be shared or installed. Installing would be done using the following command:
+```
+psp-pacman -U package-name-1.0.2.pkg.tar.gz
 ```
