@@ -43,7 +43,7 @@ psp-pacman -U package-name-1.0.2.pkg.tar.gz
 
 ### Building a package
 
-Building a package requires a ``PSPBUILD`` script. Here is [an example](https://git.archlinux.org/pacman.git/plain/proto/PKGBUILD.proto) and [some documentation on which options are available](https://wiki.archlinux.org/index.php/PKGBUILD). Do **not** call it ``PKGBUILD``, though, use ``PSPBUILD`` instead.
+Building a package requires a ``PSPBUILD`` script. Here is [an example](https://git.archlinux.org/pacman.git/plain/proto/PKGBUILD.proto) and [some documentation on which options are available](https://wiki.archlinux.org/index.php/PKGBUILD). Do **not** call it ``PKGBUILD``, though, use ``PSPBUILD`` instead. Also make sure to install libraries in ``$pkgdir/lib`` in your build script, since this will translate to ``$PSPDEV/psp/lib`` when installing.
 
 Packages can be build by running the following command in a directory with a PSPBUILD file in it:
 ```
