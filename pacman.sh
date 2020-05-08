@@ -45,5 +45,8 @@ install -D -m 644 config/makepkg.conf "${INSTALL_DIR}/etc/makepkg.conf"
 install -D -m 755 scripts/psp-pacman "${PSPDEV}/bin/psp-pacman"
 install -D -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
 
+## Make sure the dbpath directory exists
+mkdir -p "${INSTALL_DIR}/var/lib/pacman"
+
 ## Done
 echo "Installation finished."
