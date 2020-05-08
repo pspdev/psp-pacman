@@ -5,6 +5,12 @@ if [ -z "${PSPDEV}" ]; then
     export PSPDEV=/usr/local/pspdev
 fi
 
+## Use sudo if the current user doesn't own $PSPDEV
+if ! touch "${PSPDEV}" >/dev/null 2>&1; then
+    sudo "$0" "$@"
+    exit $?
+fi
+
 ## Run pacman
 if which "pacman" >/dev/null 2>&1; then
     PACMAN_CONFIG="${PSPDEV}/share/pacman/etc/pacman.conf"
