@@ -7,6 +7,12 @@ fi
 ## Export makepkg variables
 export PACMAN=psp-pacman
 
+## Force makepkg to use psp-strip for stripping binaries
+function strip {
+    psp-strip "$@"
+}
+export -f strip
+
 ## Run makepkg
 if which "makepkg" >/dev/null 2>&1; then
     export MAKEPKG_CONF="${PSPDEV}/share/pacman/etc/makepkg.conf"
