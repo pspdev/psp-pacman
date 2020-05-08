@@ -9,7 +9,7 @@ export PACMAN=psp-pacman
 
 ## Run makepkg
 if which "makepkg" >/dev/null 2>&1; then
-    export MAKEPKG_CONF=$(psp-config --pspdev-path)/pacman/makepkg.conf
+    export MAKEPKG_CONF="${PSPDEV}/share/pacman/etc/makepkg.conf"
     makepkg -p PSPBUILD "$@"
 else
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu
