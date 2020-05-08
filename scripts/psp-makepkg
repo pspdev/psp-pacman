@@ -1,0 +1,17 @@
+#!/bin/bash
+
+## Make sure PSPDEV is set
+if [ -z "${PSPDEV}" ]; then
+    export PSPDEV=/usr/local/pspdev
+fi
+## Export makepkg variables
+export PACMAN=psp-pacman
+
+## Run makepkg
+if which "makepkg" >/dev/null 2>&1; then
+    export MAKEPKG_CONF=$(psp-config --pspdev-path)/pacman/makepkg.conf
+    makepkg -p PSPBUILD "$@"
+else
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu
+    "${PSPDEV}/share/pacman/bin/makepkg" "$@"
+fi
