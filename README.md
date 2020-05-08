@@ -16,6 +16,9 @@ On Ubuntu/Debian, the following packages need to be installed:
 - python3
 - python3-venv
 
+On Arch/Manjaro, the following packages need to be installed:
+- base-devel
+
 Besides that, the [PSP toolchain](https://github.com/pspdev/psptoolchain) will need to be installed before installing this.
 
 ## Installation
