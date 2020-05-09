@@ -1,0 +1,29 @@
+#!/bin/bash
+
+## Make sure PSPDEV is set
+if [ -z "${PSPDEV}" ]; then
+    export PSPDEV=/usr/local/pspdev
+fi
+
+if [ ! -d "${PSPDEV}" ]; then
+    echo "${PSPDEV} does not exist"
+    exit 1
+fi
+
+## Use sudo if the current user doesn't own $PSPDEV
+if ! touch "${PSPDEV}" >/dev/null 2>&1; then
+    ## And only when not using the T or Q option
+    if ! [[ $1 = -@(T|Q)*([[:alpha:]]) ]]; then
+        sudo "$0" "$@"
+        exit $?
+    fi
+fi
+
+## Run pacman
+if which "pacman" >/dev/null 2>&1; then
+    PACMAN_CONFIG="${PSPDEV}/share/pacman/etc/pacman.conf"
+    pacman --root "${PSPDEV}" --dbpath "${PSPDEV}/share/pacman/var/lib/pacman"  --config "${PACMAN_CONFIG}" "$@"
+else
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu"
+    "${PSPDEV}/share/pacman/bin/pacman" "$@"
+fi
