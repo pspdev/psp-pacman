@@ -30,7 +30,7 @@ if ! which "pacman" >/dev/null 2>&1; then
 
     ## Build pacman
     meson build
-    meson configure build -Dprefix=${INSTALL_DIR} -Dbuildscript=PSPBUILD -Droot-dir=${PSPDEV}/psp -Ddoc=disabled -Dbash-completion=false
+    meson configure build -Dprefix=${INSTALL_DIR} -Dbuildscript=PSPBUILD -Droot-dir=${PSPDEV} -Ddoc=disabled -Dbash-completion=false
     cd build
     ninja
 
