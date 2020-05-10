@@ -13,7 +13,7 @@ fi
 ## Use sudo if the current user doesn't own $PSPDEV
 if ! touch "${PSPDEV}" >/dev/null 2>&1; then
     ## And only when not using the T or Q option
-    if ! [[ $1 = -@(T|Q|V|h)*([[:alpha:]]) ]]; then
+    if ! [[ $1 = -@(T|Q|V|h)*([[:alpha:]]) ]] && !  [[ $1 = --@(deptest|query|help|version)*([[:alpha:]]) ]]; then
         sudo "$0" "$@"
         exit $?
     fi
