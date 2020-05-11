@@ -19,12 +19,11 @@ if ! touch "${PSPDEV}" >/dev/null 2>&1; then
     fi
 fi
 
-## Run pacman
-if which "pacman" >/dev/null 2>&1; then
-    PACMAN_CONFIG="${PSPDEV}/share/pacman/etc/pacman.conf"
-    pacman --root "${PSPDEV}" --dbpath "${PSPDEV}/share/pacman/var/lib/pacman"  --config "${PACMAN_CONFIG}" "$@"
-else
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu"
+## Use pacman in $PSPDEV if needed
+if ! which "pacman" >/dev/null 2>&1; then
     export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-    "${PSPDEV}/share/pacman/bin/pacman" "$@"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/lib/x86_64-linux-gnu"
 fi
+
+## Run pacman
+pacman --root "${PSPDEV}" --dbpath "${PSPDEV}/var/lib/pacman"  --config "${PSPDEV}/etc/pacman.conf" "$@"

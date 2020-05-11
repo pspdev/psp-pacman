@@ -6,6 +6,7 @@ if [ -z "${PSPDEV}" ]; then
 fi
 ## Export makepkg variables
 export PACMAN=psp-pacman
+export MAKEPKG_CONF="${PSPDEV}/etc/makepkg.conf"
 
 ## Force makepkg to use psp-strip for stripping binaries
 function strip {
@@ -13,12 +14,11 @@ function strip {
 }
 export -f strip
 
-## Run makepkg
-if which "makepkg" >/dev/null 2>&1; then
-    export MAKEPKG_CONF="${PSPDEV}/share/pacman/etc/makepkg.conf"
-    makepkg -p PSPBUILD "$@"
-else
-    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu
+## Use makepkg in $PSPDEV if needed
+if ! which "makepkg" >/dev/null 2>&1; then
     export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-    "${PSPDEV}/share/pacman/bin/makepkg" "$@"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/lib/x86_64-linux-gnu"
 fi
+
+## Run makepkg
+makepkg -p PSPBUILD "$@"
