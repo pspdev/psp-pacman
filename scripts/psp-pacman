@@ -25,5 +25,6 @@ if which "pacman" >/dev/null 2>&1; then
     pacman --root "${PSPDEV}" --dbpath "${PSPDEV}/share/pacman/var/lib/pacman"  --config "${PACMAN_CONFIG}" "$@"
 else
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu"
+    export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
     "${PSPDEV}/share/pacman/bin/pacman" "$@"
 fi

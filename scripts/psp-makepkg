@@ -19,5 +19,6 @@ if which "makepkg" >/dev/null 2>&1; then
     makepkg -p PSPBUILD "$@"
 else
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PSPDEV}/share/pacman/lib/x86_64-linux-gnu
+    export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
     "${PSPDEV}/share/pacman/bin/makepkg" "$@"
 fi
