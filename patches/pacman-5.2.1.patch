@@ -1,92 +1,45 @@
-From e5d36f25f7c8171739a809ff4f7ac23dbe2d5848 Mon Sep 17 00:00:00 2001
-From: Wouter Wijsman <wwijsman@live.nl>
-Date: Thu, 7 May 2020 20:09:39 +0200
-Subject: [PATCH 2/2] Use absolute path for pacman and pacman-conf in makepkg
+From b4e3e1c7d93463dffdbb63ff78008df0f57780db Mon Sep 17 00:00:00 2001
+From: Eli Schwartz <eschwartz@archlinux.org>
+Date: Sun, 10 May 2020 19:15:39 -0400
+Subject: meson: align bash-completion install dir with our chosen datadir
 
-Currently makepkg requires pacman and pacman-conf to be in the path of
-the user. Since these executables should never move, it should be safe
-to add the full paths to the scripts at compile time, assuming the user
-uses the install command as well.
+This means if pacman and bash-completion are installed to different
+prefixes, our completions might not work. On the other hand, we should
+have write permission for our install datadir, even if we don't
+necessarily have write permission for the other datadir.
 
-This change works for both autotools and meson.
+This will work okay for cases of e.g. bash-completion in /usr, pacman in
+/usr/local, since bash-completion automatically loads:
 
-Signed-off-by: Wouter Wijsman <wwijsman@live.nl>
+- /usr/share/bash-completion/completions/
+- /usr/local/share/bash-completion/completions/
+- ${datadir}/bash-completion/completions/
+
+so the former two always work. Using $HOME/.local for a prefix will also
+work.
+
+TODO: rationalize why this isn't sufficient to have consumers install
+both together?
+
+If we're just going to swap out the datadirs, bash-completion hardcodes
+the final two path components...
 ---
- build-aux/edit-script.sh.in | 1 +
- meson.build                 | 1 +
- scripts/Makefile.am         | 3 ++-
- scripts/makepkg.sh.in       | 6 ++++--
- 4 files changed, 8 insertions(+), 3 deletions(-)
+ meson.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/build-aux/edit-script.sh.in b/build-aux/edit-script.sh.in
-index 640d32f8..02d6778f 100644
---- a/build-aux/edit-script.sh.in
-+++ b/build-aux/edit-script.sh.in
-@@ -23,6 +23,7 @@ mode=$3
-   -e "s|@SEDINPLACEFLAGS[@]|@SEDINPLACEFLAGS@|g" \
-   -e "s|@SEDPATH[@]|@SEDPATH@|g" \
-   -e "s|@configure_input[@]|Generated from ${input##*/}; do not edit by hand.|g" \
-+  -e "s|@fullbindir[@]|@FULLBINDIR@|g" \
-   "$input" >"$output"
- 
- if [[ $mode ]]; then
 diff --git a/meson.build b/meson.build
-index 8c296cb8..a90d8879 100644
+index 6e3595dd..df158d12 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -268,6 +268,7 @@ substs.set('LOCALEDIR', LOCALEDIR)
- substs.set('sysconfdir', SYSCONFDIR)
- substs.set('localstatedir', LOCALSTATEDIR)
- substs.set('PKGDATADIR', PKGDATADIR)
-+substs.set('FULLBINDIR', '@0@/@1@'.format(PREFIX, get_option('bindir')))
- substs.set('PREFIX', PREFIX)
- substs.set('BASH', BASH.path())
- substs.set('PACKAGE_VERSION', PACKAGE_VERSION)
-diff --git a/scripts/Makefile.am b/scripts/Makefile.am
-index 63d09767..ce2e47c4 100644
---- a/scripts/Makefile.am
-+++ b/scripts/Makefile.am
-@@ -189,7 +189,8 @@ edit = sed \
- 	-e 's|@SEDINPLACEFLAGS[@]|$(SEDINPLACEFLAGS)|g' \
- 	-e 's|@SEDPATH[@]|$(SEDPATH)|g' \
- 	-e 's|@SCRIPTNAME[@]|$@|g' \
--	-e 's|@configure_input[@]|Generated from $<; do not edit by hand.|g'
-+	-e 's|@configure_input[@]|Generated from $<; do not edit by hand.|g' \
-+	-e 's|@fullbindir[@]|$(FULLBINDIR)|g'
+@@ -45,7 +45,7 @@ endif
  
- ## All the scripts depend on Makefile so that they are rebuilt when the
- ## prefix etc. changes. Use chmod -w to prevent people from editing the
-diff --git a/scripts/makepkg.sh.in b/scripts/makepkg.sh.in
-index c49ac57a..1dc48f25 100644
---- a/scripts/makepkg.sh.in
-+++ b/scripts/makepkg.sh.in
-@@ -45,6 +45,8 @@ declare -r makepkg_version='@PACKAGE_VERSION@'
- declare -r confdir='@sysconfdir@'
- declare -r BUILDSCRIPT='@BUILDSCRIPT@'
- declare -r startdir="$(pwd -P)"
-+declare -r PACMAN_EXECUTABLE='@fullbindir@/pacman'
-+declare -r PACMAN_CONF_EXECUTABLE='@fullbindir@/pacman-conf'
- 
- LIBRARY=${LIBRARY:-'@libmakepkgdir@'}
- 
-@@ -234,7 +236,7 @@ run_pacman() {
- 		else
- 			cmd=(su root -c "$(printf '%q ' "${cmd[@]}")")
- 		fi
--		local lockfile="$(pacman-conf DBPath)/db.lck"
-+		local lockfile="$(${PACMAN_CONF_EXECUTABLE} DBPath)/db.lck"
- 		while [[ -f $lockfile ]]; do
- 			local timer=0
- 			msg "$(gettext "Pacman is currently in use, please wait...")"
-@@ -1123,7 +1125,7 @@ unset var
- PACKAGER=${PACKAGER:-"Unknown Packager"}
- 
- # set pacman command if not already defined
--PACMAN=${PACMAN:-pacman}
-+PACMAN=${PACMAN:-${PACMAN_EXECUTABLE}}
- # save full path to command as PATH may change when sourcing /etc/profile
- PACMAN_PATH=$(type -P $PACMAN)
- 
+ bashcompletion = dependency('bash-completion', required : false)
+ if bashcompletion.found()
+-  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
++  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir', define_variable: ['datadir', DATAROOTDIR])
+ else
+   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+ endif
 -- 
-2.20.1
+cgit v1.2.3-1-gf6bb5
 

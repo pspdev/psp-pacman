@@ -25,7 +25,10 @@ if ! which "pacman" >/dev/null 2>&1; then
     mkdir -p "${BASE_PATH}/build"
     cd "${BASE_PATH}/build"
     download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.gz pacman-${PACMAN_VERSION}
-    #apply_patch pacman-${PACMAN_VERSION}
+
+    ## Apply temporary patch
+    ## Will probably not be needed for the next version of pacman
+    apply_patch pacman-${PACMAN_VERSION}
 
     ## Install meson and ninja in the current directory
     setup_build_system
