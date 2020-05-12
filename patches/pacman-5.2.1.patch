@@ -1,0 +1,45 @@
+From b4e3e1c7d93463dffdbb63ff78008df0f57780db Mon Sep 17 00:00:00 2001
+From: Eli Schwartz <eschwartz@archlinux.org>
+Date: Sun, 10 May 2020 19:15:39 -0400
+Subject: meson: align bash-completion install dir with our chosen datadir
+
+This means if pacman and bash-completion are installed to different
+prefixes, our completions might not work. On the other hand, we should
+have write permission for our install datadir, even if we don't
+necessarily have write permission for the other datadir.
+
+This will work okay for cases of e.g. bash-completion in /usr, pacman in
+/usr/local, since bash-completion automatically loads:
+
+- /usr/share/bash-completion/completions/
+- /usr/local/share/bash-completion/completions/
+- ${datadir}/bash-completion/completions/
+
+so the former two always work. Using $HOME/.local for a prefix will also
+work.
+
+TODO: rationalize why this isn't sufficient to have consumers install
+both together?
+
+If we're just going to swap out the datadirs, bash-completion hardcodes
+the final two path components...
+---
+ meson.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meson.build b/meson.build
+index 6e3595dd..df158d12 100644
+--- a/meson.build
++++ b/meson.build
+@@ -45,7 +45,7 @@ endif
+ 
+ bashcompletion = dependency('bash-completion', required : false)
+ if bashcompletion.found()
+-  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
++  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir', define_variable: ['datadir', DATAROOTDIR])
+ else
+   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+ endif
+-- 
+cgit v1.2.3-1-gf6bb5
+

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+## Make sure PSPDEV is set
+if [ -z "${PSPDEV}" ]; then
+    export PSPDEV=/usr/local/pspdev
+fi
+## Export makepkg variables
+export PACMAN=psp-pacman
+export MAKEPKG_CONF="${PSPDEV}/etc/makepkg.conf"
+
+## Force makepkg to use psp-strip for stripping binaries
+function strip {
+    psp-strip "$@"
+}
+export -f strip
+
+## Use makepkg in $PSPDEV if needed
+if ! which "makepkg" >/dev/null 2>&1; then
+    export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/lib/x86_64-linux-gnu"
+fi
+
+## Run makepkg
+makepkg -p PSPBUILD "$@"
