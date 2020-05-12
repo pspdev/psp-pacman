@@ -35,7 +35,10 @@ if ! which "pacman" >/dev/null 2>&1; then
 
     ## Build pacman
     meson build
-    meson configure build -Dprefix="${PSPDEV}" -Dbuildscript=PSPBUILD -Droot-dir="${PSPDEV}" -Dbindir="${PSPDEV}/share/pacman/bin" -Ddoc=disabled
+    meson configure build -Dprefix="${PSPDEV}" --buildtype=release \
+      -Ddefault_library=static  -Dbuildscript=PSPBUILD \
+      -Droot-dir="${PSPDEV}" -Dbindir="${PSPDEV}/share/pacman/bin" \
+      -Ddoc=disabled -Di18n=false
     cd build
     ninja
 
@@ -54,4 +57,4 @@ install -D -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
 mkdir -p "${PSPDEV}/var/lib/pacman"
 
 ## Done
-echo "Installation finished."
+echo "psp-pacman installation finished."

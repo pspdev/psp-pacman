@@ -4,6 +4,7 @@
 if [ -z "${PSPDEV}" ]; then
     export PSPDEV=/usr/local/pspdev
 fi
+
 ## Export makepkg variables
 export PACMAN=psp-pacman
 export MAKEPKG_CONF="${PSPDEV}/etc/makepkg.conf"
@@ -17,7 +18,6 @@ export -f strip
 ## Use makepkg in $PSPDEV if needed
 if ! which "makepkg" >/dev/null 2>&1; then
     export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/lib/x86_64-linux-gnu"
 fi
 
 ## Run makepkg

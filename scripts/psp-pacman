@@ -22,8 +22,9 @@ fi
 ## Use pacman in $PSPDEV if needed
 if ! which "pacman" >/dev/null 2>&1; then
     export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PSPDEV}/lib/x86_64-linux-gnu"
 fi
 
 ## Run pacman
-pacman --root "${PSPDEV}" --dbpath "${PSPDEV}/var/lib/pacman"  --config "${PSPDEV}/etc/pacman.conf" "$@"
+pacman --root "${PSPDEV}" \
+  --dbpath "${PSPDEV}/var/lib/pacman" \
+  --config "${PSPDEV}/etc/pacman.conf" "$@"

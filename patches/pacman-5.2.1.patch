@@ -1,37 +1,7 @@
-From b4e3e1c7d93463dffdbb63ff78008df0f57780db Mon Sep 17 00:00:00 2001
-From: Eli Schwartz <eschwartz@archlinux.org>
-Date: Sun, 10 May 2020 19:15:39 -0400
-Subject: meson: align bash-completion install dir with our chosen datadir
-
-This means if pacman and bash-completion are installed to different
-prefixes, our completions might not work. On the other hand, we should
-have write permission for our install datadir, even if we don't
-necessarily have write permission for the other datadir.
-
-This will work okay for cases of e.g. bash-completion in /usr, pacman in
-/usr/local, since bash-completion automatically loads:
-
-- /usr/share/bash-completion/completions/
-- /usr/local/share/bash-completion/completions/
-- ${datadir}/bash-completion/completions/
-
-so the former two always work. Using $HOME/.local for a prefix will also
-work.
-
-TODO: rationalize why this isn't sufficient to have consumers install
-both together?
-
-If we're just going to swap out the datadirs, bash-completion hardcodes
-the final two path components...
----
- meson.build | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/meson.build b/meson.build
-index 6e3595dd..df158d12 100644
---- a/meson.build
-+++ b/meson.build
-@@ -45,7 +45,7 @@ endif
+diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
+--- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
++++ pacman-5.2.1/meson.build	2020-05-12 23:50:53.732238004 +0200
+@@ -47,7 +47,7 @@
  
  bashcompletion = dependency('bash-completion', required : false)
  if bashcompletion.found()
@@ -40,6 +10,62 @@ index 6e3595dd..df158d12 100644
  else
    BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
  endif
--- 
-cgit v1.2.3-1-gf6bb5
-
+@@ -322,7 +322,8 @@
+   # https://github.com/mesonbuild/meson/issues/3937
+   objects : libcommon.extract_all_objects(),
+   include_directories : includes,
+-  dependencies : alpm_deps)
++  dependencies : alpm_deps,
++  install : false)
+ 
+ libalpm = library(
+   'alpm',
+@@ -331,17 +332,17 @@
+   dependencies : alpm_deps,
+   install : true)
+ 
+-install_headers(
+-  'lib/libalpm/alpm.h',
+-  'lib/libalpm/alpm_list.h')
+-
+-pkgconfig = import('pkgconfig')
+-pkgconfig.generate(
+-  libalpm,
+-  name : 'libalpm',
+-  description : 'Arch Linux package management library',
+-  version : libalpm_version,
+-  url : 'http://www.archlinux.org/pacman/')
++#install_headers(
++#  'lib/libalpm/alpm.h',
++#  'lib/libalpm/alpm_list.h')
++
++#pkgconfig = import('pkgconfig')
++#pkgconfig.generate(
++#  libalpm,
++#  name : 'libalpm',
++#  description : 'Arch Linux package management library',
++#  version : libalpm_version,
++#  url : 'http://www.archlinux.org/pacman/')
+ 
+ pacman_bin = executable(
+   'pacman',
+diff --color -Naur pacman-5.2.1.orig/scripts/meson.build pacman-5.2.1/scripts/meson.build
+--- pacman-5.2.1.orig/scripts/meson.build	2019-08-12 03:26:42.000000000 +0200
++++ pacman-5.2.1/scripts/meson.build	2020-05-12 23:46:11.035405868 +0200
+@@ -78,11 +78,11 @@
+ 
+ subdir('libmakepkg')
+ 
+-configure_file(
+-	configuration : { 'libmakepkgdir': LIBMAKEPKGDIR, 'PACKAGE_VERSION': PACKAGE_VERSION },
+-	input : 'libmakepkg.pc.in',
+-	output : '@BASENAME@',
+-	install_dir : join_paths(DATAROOTDIR, 'pkgconfig'))
++#configure_file(
++#	configuration : { 'libmakepkgdir': LIBMAKEPKGDIR, 'PACKAGE_VERSION': PACKAGE_VERSION },
++#	input : 'libmakepkg.pc.in',
++#	output : '@BASENAME@',
++#	install_dir : join_paths(DATAROOTDIR, 'pkgconfig'))
+ 
+ custom_target(
+   'bash_completion',
