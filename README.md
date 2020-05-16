@@ -13,7 +13,7 @@ On Ubuntu/Debian, the following packages need to be installed:
 - gettext
 - libarchive-dev
 - libcurl4-openssl-dev
-- libgpme-dev
+- libgpgme-dev
 - libssl-dev
 - m4
 - pkg-config
