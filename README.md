@@ -9,12 +9,17 @@ This package provides the following commands:
 ## Dependencies
 
 On Ubuntu/Debian, the following packages need to be installed:
+- build-essential
+- gettext
 - libarchive-dev
 - libcurl4-openssl-dev
+- libgpme-dev
 - libssl-dev
+- m4
 - pkg-config
 - python3
 - python3-venv
+- wget
 
 On Arch/Manjaro, the following packages need to be installed:
 - base-devel
