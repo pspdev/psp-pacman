@@ -10,7 +10,7 @@ This package provides the following commands:
 
 On Ubuntu/Debian, the following packages need to be installed:
 - build-essential
-- gettext
+- gettext (optional to add support for other languages than english)
 - libarchive-dev
 - libcurl4-openssl-dev
 - libgpgme-dev
