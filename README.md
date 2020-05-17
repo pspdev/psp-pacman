@@ -15,6 +15,7 @@ On Ubuntu/Debian, the following packages need to be installed:
 - libcurl4-openssl-dev
 - libgpgme-dev
 - libssl-dev
+- m4
 - pkg-config
 - python3
 - python3-venv
