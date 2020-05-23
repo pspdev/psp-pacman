@@ -12,6 +12,7 @@ On Ubuntu/Debian, the following packages need to be installed:
 - build-essential
 - gettext (optional to add support for other languages than english)
 - libarchive-dev
+- libarchive-tools
 - libcurl4-openssl-dev
 - libgpgme-dev
 - libssl-dev
