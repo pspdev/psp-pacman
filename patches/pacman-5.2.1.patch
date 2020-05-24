@@ -1,6 +1,6 @@
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-12 23:50:53.732238004 +0200
++++ pacman-5.2.1/meson.build	2020-05-24 16:34:02.056064516 +0200
 @@ -47,7 +47,7 @@
  
  bashcompletion = dependency('bash-completion', required : false)
@@ -10,7 +10,7 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
  else
    BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
  endif
-@@ -322,7 +322,8 @@
+@@ -322,26 +322,27 @@
    # https://github.com/mesonbuild/meson/issues/3937
    objects : libcommon.extract_all_objects(),
    include_directories : includes,
@@ -20,9 +20,11 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
  
  libalpm = library(
    'alpm',
-@@ -331,17 +332,17 @@
+   version : libalpm_version,
+   objects: libalpm_a.extract_all_objects(recursive: true),
    dependencies : alpm_deps,
-   install : true)
+-  install : true)
++  install : false)
  
 -install_headers(
 -  'lib/libalpm/alpm.h',
