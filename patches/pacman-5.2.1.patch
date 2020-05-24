@@ -1,15 +1,24 @@
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-24 16:34:02.056064516 +0200
-@@ -47,7 +47,7 @@
- 
- bashcompletion = dependency('bash-completion', required : false)
- if bashcompletion.found()
--  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
-+  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir', define_variable: ['datadir', DATAROOTDIR])
- else
-   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
++++ pacman-5.2.1/meson.build	2020-05-24 16:35:13.428012807 +0200
+@@ -45,12 +45,12 @@
+   error('bash >= 4.4.0 is required for pacman scripts.')
  endif
+ 
+-bashcompletion = dependency('bash-completion', required : false)
+-if bashcompletion.found()
+-  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
+-else
++#bashcompletion = dependency('bash-completion', required : false)
++#if bashcompletion.found()
++#  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
++#else
+   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+-endif
++#endif
+ 
+ if get_option('use-git-version')
+   PACKAGE_VERSION = run_command(
 @@ -322,26 +322,27 @@
    # https://github.com/mesonbuild/meson/issues/3937
    objects : libcommon.extract_all_objects(),
