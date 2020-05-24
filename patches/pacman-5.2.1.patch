@@ -1,16 +1,25 @@
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-12 23:50:53.732238004 +0200
-@@ -47,7 +47,7 @@
- 
- bashcompletion = dependency('bash-completion', required : false)
- if bashcompletion.found()
--  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
-+  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir', define_variable: ['datadir', DATAROOTDIR])
- else
-   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
++++ pacman-5.2.1/meson.build	2020-05-24 16:35:13.428012807 +0200
+@@ -45,12 +45,12 @@
+   error('bash >= 4.4.0 is required for pacman scripts.')
  endif
-@@ -322,7 +322,8 @@
+ 
+-bashcompletion = dependency('bash-completion', required : false)
+-if bashcompletion.found()
+-  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
+-else
++#bashcompletion = dependency('bash-completion', required : false)
++#if bashcompletion.found()
++#  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
++#else
+   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+-endif
++#endif
+ 
+ if get_option('use-git-version')
+   PACKAGE_VERSION = run_command(
+@@ -322,26 +322,27 @@
    # https://github.com/mesonbuild/meson/issues/3937
    objects : libcommon.extract_all_objects(),
    include_directories : includes,
@@ -20,9 +29,11 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
  
  libalpm = library(
    'alpm',
-@@ -331,17 +332,17 @@
+   version : libalpm_version,
+   objects: libalpm_a.extract_all_objects(recursive: true),
    dependencies : alpm_deps,
-   install : true)
+-  install : true)
++  install : false)
  
 -install_headers(
 -  'lib/libalpm/alpm.h',
