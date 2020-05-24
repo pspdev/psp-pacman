@@ -1,6 +1,6 @@
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-24 16:35:13.428012807 +0200
++++ pacman-5.2.1/meson.build	2020-05-24 16:58:31.070812948 +0200
 @@ -45,12 +45,12 @@
    error('bash >= 4.4.0 is required for pacman scripts.')
  endif
@@ -60,9 +60,24 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
  
  pacman_bin = executable(
    'pacman',
+diff --color -Naur pacman-5.2.1.orig/scripts/makepkg.sh.in pacman-5.2.1/scripts/makepkg.sh.in
+--- pacman-5.2.1.orig/scripts/makepkg.sh.in	2019-10-30 01:05:28.000000000 +0100
++++ pacman-5.2.1/scripts/makepkg.sh.in	2020-05-24 17:04:47.683454288 +0200
+@@ -229,11 +229,6 @@
+ 		cmd=("$PACMAN_PATH" "$@")
+ 	else
+ 		cmd=("$PACMAN_PATH" "${PACMAN_OPTS[@]}" "$@")
+-		if type -p sudo >/dev/null; then
+-			cmd=(sudo "${cmd[@]}")
+-		else
+-			cmd=(su root -c "$(printf '%q ' "${cmd[@]}")")
+-		fi
+ 		local lockfile="$(pacman-conf DBPath)/db.lck"
+ 		while [[ -f $lockfile ]]; do
+ 			local timer=0
 diff --color -Naur pacman-5.2.1.orig/scripts/meson.build pacman-5.2.1/scripts/meson.build
 --- pacman-5.2.1.orig/scripts/meson.build	2019-08-12 03:26:42.000000000 +0200
-+++ pacman-5.2.1/scripts/meson.build	2020-05-12 23:46:11.035405868 +0200
++++ pacman-5.2.1/scripts/meson.build	2020-05-24 16:58:31.070812948 +0200
 @@ -78,11 +78,11 @@
  
  subdir('libmakepkg')
@@ -82,7 +97,7 @@ diff --color -Naur pacman-5.2.1.orig/scripts/meson.build pacman-5.2.1/scripts/me
    'bash_completion',
 diff --color -Naur pacman-5.2.1.orig/src/pacman/pacman.c pacman-5.2.1/src/pacman/pacman.c
 --- pacman-5.2.1.orig/src/pacman/pacman.c	2019-10-24 15:29:08.000000000 +0200
-+++ pacman-5.2.1/src/pacman/pacman.c	2020-05-24 14:04:46.488903832 +0200
++++ pacman-5.2.1/src/pacman/pacman.c	2020-05-24 16:58:31.070812948 +0200
 @@ -1126,7 +1126,8 @@
  	}
  
