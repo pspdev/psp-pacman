@@ -1,3 +1,16 @@
+diff --color -Naur pacman-5.2.1.orig/lib/libalpm/signing.c pacman-5.2.1/lib/libalpm/signing.c
+--- pacman-5.2.1.orig/lib/libalpm/signing.c	2019-10-24 15:29:08.000000000 +0200
++++ pacman-5.2.1/lib/libalpm/signing.c	2020-05-25 22:42:30.516063383 +0200
+@@ -277,7 +277,8 @@
+ 	CHECK_ERR();
+ 
+ 	mode = gpgme_get_keylist_mode(ctx);
+-	mode |= GPGME_KEYLIST_MODE_LOCATE;
++	/* pspdev: LOCATE alias is only available in 1.11.0 or newer */
++	mode |= (GPGME_KEYLIST_MODE_LOCAL|GPGME_KEYLIST_MODE_EXTERN);
+ 	gpg_err = gpgme_set_keylist_mode(ctx, mode);
+ 	CHECK_ERR();
+ 
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
 +++ pacman-5.2.1/meson.build	2020-05-25 20:52:47.763143655 +0200
