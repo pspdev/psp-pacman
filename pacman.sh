@@ -25,8 +25,7 @@ mkdir -p "${BASE_PATH}/build"
 cd "${BASE_PATH}/build"
 download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.gz pacman-${PACMAN_VERSION}
 
-## Apply temporary patch
-## Will probably not be needed for the next version of pacman
+## Apply patch
 apply_patch pacman-${PACMAN_VERSION}
 
 ## Install meson and ninja in the current directory
