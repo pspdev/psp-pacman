@@ -1,7 +1,20 @@
+diff --color -Naur pacman-5.2.1.orig/lib/libalpm/signing.c pacman-5.2.1/lib/libalpm/signing.c
+--- pacman-5.2.1.orig/lib/libalpm/signing.c	2019-10-24 15:29:08.000000000 +0200
++++ pacman-5.2.1/lib/libalpm/signing.c	2020-05-25 22:42:30.516063383 +0200
+@@ -277,7 +277,8 @@
+ 	CHECK_ERR();
+ 
+ 	mode = gpgme_get_keylist_mode(ctx);
+-	mode |= GPGME_KEYLIST_MODE_LOCATE;
++	/* pspdev: LOCATE alias is only available in 1.11.0 or newer */
++	mode |= (GPGME_KEYLIST_MODE_LOCAL|GPGME_KEYLIST_MODE_EXTERN);
+ 	gpg_err = gpgme_set_keylist_mode(ctx, mode);
+ 	CHECK_ERR();
+ 
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-24 16:58:31.070812948 +0200
-@@ -45,12 +45,12 @@
++++ pacman-5.2.1/meson.build	2020-05-25 20:52:47.763143655 +0200
+@@ -45,12 +45,7 @@
    error('bash >= 4.4.0 is required for pacman scripts.')
  endif
  
@@ -9,17 +22,13 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 -if bashcompletion.found()
 -  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
 -else
-+#bashcompletion = dependency('bash-completion', required : false)
-+#if bashcompletion.found()
-+#  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
-+#else
-   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+-  BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
 -endif
-+#endif
++BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
  
  if get_option('use-git-version')
    PACKAGE_VERSION = run_command(
-@@ -322,26 +322,27 @@
+@@ -322,26 +317,15 @@
    # https://github.com/mesonbuild/meson/issues/3937
    objects : libcommon.extract_all_objects(),
    include_directories : includes,
@@ -33,8 +42,7 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
    objects: libalpm_a.extract_all_objects(recursive: true),
    dependencies : alpm_deps,
 -  install : true)
-+  install : false)
- 
+-
 -install_headers(
 -  'lib/libalpm/alpm.h',
 -  'lib/libalpm/alpm_list.h')
@@ -46,23 +54,13 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 -  description : 'Arch Linux package management library',
 -  version : libalpm_version,
 -  url : 'http://www.archlinux.org/pacman/')
-+#install_headers(
-+#  'lib/libalpm/alpm.h',
-+#  'lib/libalpm/alpm_list.h')
-+
-+#pkgconfig = import('pkgconfig')
-+#pkgconfig.generate(
-+#  libalpm,
-+#  name : 'libalpm',
-+#  description : 'Arch Linux package management library',
-+#  version : libalpm_version,
-+#  url : 'http://www.archlinux.org/pacman/')
++  install : false)
  
  pacman_bin = executable(
    'pacman',
 diff --color -Naur pacman-5.2.1.orig/scripts/makepkg.sh.in pacman-5.2.1/scripts/makepkg.sh.in
 --- pacman-5.2.1.orig/scripts/makepkg.sh.in	2019-10-30 01:05:28.000000000 +0100
-+++ pacman-5.2.1/scripts/makepkg.sh.in	2020-05-24 17:04:47.683454288 +0200
++++ pacman-5.2.1/scripts/makepkg.sh.in	2020-05-25 22:08:25.260680805 +0200
 @@ -229,11 +229,6 @@
  		cmd=("$PACMAN_PATH" "$@")
  	else
@@ -77,8 +75,8 @@ diff --color -Naur pacman-5.2.1.orig/scripts/makepkg.sh.in pacman-5.2.1/scripts/
  			local timer=0
 diff --color -Naur pacman-5.2.1.orig/scripts/meson.build pacman-5.2.1/scripts/meson.build
 --- pacman-5.2.1.orig/scripts/meson.build	2019-08-12 03:26:42.000000000 +0200
-+++ pacman-5.2.1/scripts/meson.build	2020-05-24 16:58:31.070812948 +0200
-@@ -78,11 +78,11 @@
++++ pacman-5.2.1/scripts/meson.build	2020-05-25 20:54:39.214269161 +0200
+@@ -78,12 +78,6 @@
  
  subdir('libmakepkg')
  
@@ -87,17 +85,13 @@ diff --color -Naur pacman-5.2.1.orig/scripts/meson.build pacman-5.2.1/scripts/me
 -	input : 'libmakepkg.pc.in',
 -	output : '@BASENAME@',
 -	install_dir : join_paths(DATAROOTDIR, 'pkgconfig'))
-+#configure_file(
-+#	configuration : { 'libmakepkgdir': LIBMAKEPKGDIR, 'PACKAGE_VERSION': PACKAGE_VERSION },
-+#	input : 'libmakepkg.pc.in',
-+#	output : '@BASENAME@',
-+#	install_dir : join_paths(DATAROOTDIR, 'pkgconfig'))
- 
+-
  custom_target(
    'bash_completion',
+   command : [ SCRIPT_EDITOR, '@INPUT@', '@OUTPUT@' ],
 diff --color -Naur pacman-5.2.1.orig/src/pacman/pacman.c pacman-5.2.1/src/pacman/pacman.c
 --- pacman-5.2.1.orig/src/pacman/pacman.c	2019-10-24 15:29:08.000000000 +0200
-+++ pacman-5.2.1/src/pacman/pacman.c	2020-05-24 16:58:31.070812948 +0200
++++ pacman-5.2.1/src/pacman/pacman.c	2020-05-25 20:56:17.072331665 +0200
 @@ -1126,7 +1126,8 @@
  	}
  
