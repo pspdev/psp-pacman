@@ -30,8 +30,10 @@ if ! which "pacman" >/dev/null 2>&1; then
     ## Will probably not be needed for the next version of pacman
     apply_patch pacman-${PACMAN_VERSION}
 
-    ## Install meson and ninja in the current directory
-    setup_build_system
+    if [ "$(uname)" != "Darwin" ]; then
+        ## Install meson and ninja in the current directory
+        setup_build_system
+    fi
 
     ## Build pacman
     meson build

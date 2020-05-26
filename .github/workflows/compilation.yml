@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install g++ gcc gettext git gzip libarchive-dev \
+                                libcurl4-openssl-dev libgpgme-dev \
+                                libssl-dev m4 make patch pkg-config \
+                                python3 python3-venv tar wget
+
+    - name: Install on MacOS
+      if: matrix.os == 'macOS-latest'
+      run: |
+        brew update
+        brew install bash coreutils curl gettext gpgme intltool libarchive \
+                     meson ninja openssl pkg-config wget
+
+    - name: Build and Install Pacman
+      run: |
+        if [ "$(uname)" == "Darwin" ]; then
+          BPFX="`brew --prefix`"
+          # link in keg-only deps
+          export PKG_CONFIG_PATH="$BPFX/opt/libarchive/lib/pkgconfig:$BPFX/opt/openssl/lib/pkgconfig"
+          # use 'install' from coreutils
+          export PATH="$BPFX/opt/coreutils/libexec/gnubin:$PATH"
+        fi
+        export PSPDEV=$PWD/pspdev
+        export PATH=$PATH:$PSPDEV/bin
+        ./pacman.sh
+
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+
+    - name: Compress pspdev folder
+      run: |
+        tar -zcvf pspdev-pacman.tar.gz pspdev
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: pspdev-pacman-${{ steps.slug.outputs.sha8 }}-${{matrix.os}}
+        path: pspdev-pacman.tar.gz
+
+    - name: Rename pspdev-pacman.tar.gz file
+      run: |
+        mv pspdev-pacman.tar.gz pspdev-pacman-${{matrix.os}}.tar.gz
+
+    - name: Extract tag name
+      if: startsWith(github.ref, 'refs/tags/')
+      id: tag
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
