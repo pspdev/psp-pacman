@@ -11,9 +11,27 @@ diff --color -Naur pacman-5.2.1.orig/lib/libalpm/signing.c pacman-5.2.1/lib/liba
  	gpg_err = gpgme_set_keylist_mode(ctx, mode);
  	CHECK_ERR();
  
+diff --color -Naur pacman-5.2.1.orig/lib/libalpm/util.c pacman-5.2.1/lib/libalpm/util.c
+--- pacman-5.2.1.orig/lib/libalpm/util.c	2019-10-24 15:29:08.000000000 +0200
++++ pacman-5.2.1/lib/libalpm/util.c	2020-05-27 00:45:56.233934782 +0200
+@@ -34,6 +34,14 @@
+ #include <fnmatch.h>
+ #include <poll.h>
+ 
++#ifdef __APPLE__
++	#include <signal.h>
++	/* deprecated */
++	#define SIGPOLL 7
++	/* not available */
++	#define MSG_NOSIGNAL 0
++#endif
++
+ /* libarchive */
+ #include <archive.h>
+ #include <archive_entry.h>
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-25 20:52:47.763143655 +0200
++++ pacman-5.2.1/meson.build	2020-05-26 21:51:22.851789301 +0200
 @@ -45,12 +45,7 @@
    error('bash >= 4.4.0 is required for pacman scripts.')
  endif
@@ -28,7 +46,32 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
  
  if get_option('use-git-version')
    PACKAGE_VERSION = run_command(
-@@ -322,26 +317,15 @@
+@@ -79,9 +74,14 @@
+ conf.set_quoted('HOOKDIR', join_paths(SYSCONFDIR, 'pacman.d/hooks/'))
+ conf.set_quoted('ROOTDIR', ROOTDIR)
+ 
++libintl = []
+ if get_option('i18n')
++  # pspdev: first check in libc, fallback to libintl
+   if not cc.has_function('ngettext')
+-    error('ngettext not found but NLS support requested')
++    libintl = cc.find_library('intl', required : false)
++    if not libintl.found()
++      error('ngettext not found but NLS support requested')
++    endif
+   endif
+   conf.set('ENABLE_NLS', 1)
+ endif
+@@ -314,7 +314,7 @@
+   include_directories : includes,
+   install : false)
+ 
+-alpm_deps = [crypto_provider, libarchive, libcurl, gpgme]
++alpm_deps = [libintl, crypto_provider, libarchive, libcurl, gpgme]
+ 
+ libalpm_a = static_library(
+   'alpm_objlib',
+@@ -322,26 +322,15 @@
    # https://github.com/mesonbuild/meson/issues/3937
    objects : libcommon.extract_all_objects(),
    include_directories : includes,
@@ -89,6 +132,20 @@ diff --color -Naur pacman-5.2.1.orig/scripts/meson.build pacman-5.2.1/scripts/me
  custom_target(
    'bash_completion',
    command : [ SCRIPT_EDITOR, '@INPUT@', '@OUTPUT@' ],
+diff --color -Naur pacman-5.2.1.orig/src/pacman/conf.c pacman-5.2.1/src/pacman/conf.c
+--- pacman-5.2.1.orig/src/pacman/conf.c	2019-10-24 15:29:08.000000000 +0200
++++ pacman-5.2.1/src/pacman/conf.c	2020-05-27 00:45:25.164446267 +0200
+@@ -32,6 +32,10 @@
+ #include <sys/wait.h>
+ #include <unistd.h>
+ 
++#ifdef __APPLE__
++	#include <signal.h>
++#endif
++
+ /* pacman */
+ #include "conf.h"
+ #include "ini.h"
 diff --color -Naur pacman-5.2.1.orig/src/pacman/pacman.c pacman-5.2.1/src/pacman/pacman.c
 --- pacman-5.2.1.orig/src/pacman/pacman.c	2019-10-24 15:29:08.000000000 +0200
 +++ pacman-5.2.1/src/pacman/pacman.c	2020-05-25 20:56:17.072331665 +0200
