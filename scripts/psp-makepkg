@@ -2,12 +2,13 @@
 
 ## Make sure PSPDEV is set
 if [ -z "${PSPDEV}" ]; then
-    export PSPDEV=/usr/local/pspdev
+    echo "The PSPDEV environment variable has not been set"
+    exit 1
 fi
 
 if [ ! -d "${PSPDEV}" ]; then
     echo "${PSPDEV} does not exist"
-    exit 1
+    exit 2
 fi
 
 ## Export makepkg variables
