@@ -1,3 +1,15 @@
+diff --color -Naur pacman-5.2.1.orig/lib/libalpm/diskspace.c pacman-5.2.1/lib/libalpm/diskspace.c
+--- pacman-5.2.1.orig/lib/libalpm/diskspace.c	2019-10-24 15:29:08.000000000 +0200
++++ pacman-5.2.1/lib/libalpm/diskspace.c	2020-05-27 00:18:52.653963571 +0200
+@@ -71,7 +71,7 @@
+ 
+ static int mount_point_load_fsinfo(alpm_handle_t *handle, alpm_mountpoint_t *mountpoint)
+ {
+-#if defined(HAVE_GETMNTENT)
++#if defined(HAVE_GETMNTENT) && !defined(HAVE_GETMNTINFO)
+ 	/* grab the filesystem usage */
+ 	if(statvfs(mountpoint->mount_dir, &(mountpoint->fsp)) != 0) {
+ 		_alpm_log(handle, ALPM_LOG_WARNING,
 diff --color -Naur pacman-5.2.1.orig/lib/libalpm/signing.c pacman-5.2.1/lib/libalpm/signing.c
 --- pacman-5.2.1.orig/lib/libalpm/signing.c	2019-10-24 15:29:08.000000000 +0200
 +++ pacman-5.2.1/lib/libalpm/signing.c	2020-05-25 22:42:30.516063383 +0200
@@ -31,7 +43,7 @@ diff --color -Naur pacman-5.2.1.orig/lib/libalpm/util.c pacman-5.2.1/lib/libalpm
  #include <archive_entry.h>
 diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
 --- pacman-5.2.1.orig/meson.build	2019-11-01 01:56:41.000000000 +0100
-+++ pacman-5.2.1/meson.build	2020-05-26 21:51:22.851789301 +0200
++++ pacman-5.2.1/meson.build	2020-05-27 02:18:17.086699579 +0200
 @@ -45,12 +45,7 @@
    error('bash >= 4.4.0 is required for pacman scripts.')
  endif
@@ -62,7 +74,33 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
    endif
    conf.set('ENABLE_NLS', 1)
  endif
-@@ -314,7 +314,7 @@
+@@ -154,8 +154,9 @@
+     ['struct statfs', 'f_flags', '''#include <sys/param.h>
+                                     #include <sys/mount.h>'''],
+   ]
+-  have = cc.has_member(member[0], member[1], prefix : member[2])
+-  conf.set('HAVE_' + '_'.join([member[0], member[1]]).underscorify().to_upper(), have)
++  if cc.has_member(member[0], member[1], prefix : member[2])
++    conf.set('HAVE_' + '_'.join([member[0], member[1]]).underscorify().to_upper(), 1)
++  endif
+ endforeach
+ 
+ foreach type : [
+@@ -173,10 +174,10 @@
+   endif
+ endforeach
+ 
+-if conf.has('HAVE_STRUCT_STATVFS_F_FLAG')
+-  conf.set('FSSTATSTYPE', 'struct statvfs')
+-elif conf.has('HAVE_STRUCT_STATFS_F_FLAGS')
++if conf.has('HAVE_STRUCT_STATFS_F_FLAGS')
+   conf.set('FSSTATSTYPE', 'struct statfs')
++elif conf.has('HAVE_STRUCT_STATVFS_F_FLAG')
++  conf.set('FSSTATSTYPE', 'struct statvfs')
+ endif
+ 
+ if get_option('buildtype').startswith('debug')
+@@ -314,7 +315,7 @@
    include_directories : includes,
    install : false)
  
@@ -71,7 +109,7 @@ diff --color -Naur pacman-5.2.1.orig/meson.build pacman-5.2.1/meson.build
  
  libalpm_a = static_library(
    'alpm_objlib',
-@@ -322,26 +322,15 @@
+@@ -322,26 +323,15 @@
    # https://github.com/mesonbuild/meson/issues/3937
    objects : libcommon.extract_all_objects(),
    include_directories : includes,
