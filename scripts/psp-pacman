@@ -19,12 +19,8 @@ if ! touch "${PSPDEV}" >/dev/null 2>&1; then
     fi
 fi
 
-## Use pacman in $PSPDEV if needed
-if ! which "pacman" >/dev/null 2>&1; then
-    export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-fi
+## Add the directory with pacman's binaries to the start of the PATH
+export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
 
 ## Run pacman
-pacman --root "${PSPDEV}" \
-  --dbpath "${PSPDEV}/var/lib/pacman" \
-  --config "${PSPDEV}/etc/pacman.conf" "$@"
+pacman "$@"

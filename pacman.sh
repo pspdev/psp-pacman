@@ -20,31 +20,29 @@ PACMAN_VERSION="5.2.1"
 INSTALL_DIR="${PSPDEV}/share/pacman"
 BASE_PATH="${PWD}"
 
-## Only install if pacman is not available
-if ! which "pacman" >/dev/null 2>&1; then
-    mkdir -p "${BASE_PATH}/build"
-    cd "${BASE_PATH}/build"
-    download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.gz pacman-${PACMAN_VERSION}
+## Prepare the build environment
+mkdir -p "${BASE_PATH}/build"
+cd "${BASE_PATH}/build"
+download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.gz pacman-${PACMAN_VERSION}
 
-    ## Apply temporary patch
-    ## Will probably not be needed for the next version of pacman
-    apply_patch pacman-${PACMAN_VERSION}
+## Apply temporary patch
+## Will probably not be needed for the next version of pacman
+apply_patch pacman-${PACMAN_VERSION}
 
-    ## Install meson and ninja in the current directory
-    setup_build_system
+## Install meson and ninja in the current directory
+setup_build_system
 
-    ## Build pacman
-    meson build
-    meson configure build -Dprefix="${PSPDEV}" --buildtype=release \
-      -Ddefault_library=static  -Dbuildscript=PSPBUILD \
-      -Droot-dir="${PSPDEV}" -Dbindir="${PSPDEV}/share/pacman/bin" \
-      -Ddoc=disabled -Di18n=false
-    cd build
-    ninja
+## Build pacman
+meson build
+meson configure build -Dprefix="${PSPDEV}" --buildtype=release \
+  -Ddefault_library=static  -Dbuildscript=PSPBUILD \
+  -Droot-dir="${PSPDEV}" -Dbindir="${PSPDEV}/share/pacman/bin" \
+  -Ddoc=disabled -Di18n=false
+cd build
+ninja
 
-    ## Install
-    ninja install
-fi
+## Install
+ninja install
 
 ## Install configuration files and wrapper script
 cd "${BASE_PATH}"

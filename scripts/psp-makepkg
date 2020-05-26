@@ -5,9 +5,13 @@ if [ -z "${PSPDEV}" ]; then
     export PSPDEV=/usr/local/pspdev
 fi
 
+if [ ! -d "${PSPDEV}" ]; then
+    echo "${PSPDEV} does not exist"
+    exit 1
+fi
+
 ## Export makepkg variables
 export PACMAN=psp-pacman
-export MAKEPKG_CONF="${PSPDEV}/etc/makepkg.conf"
 
 ## Force makepkg to use psp-strip for stripping binaries
 function strip {
@@ -15,10 +19,8 @@ function strip {
 }
 export -f strip
 
-## Use makepkg in $PSPDEV if needed
-if ! which "makepkg" >/dev/null 2>&1; then
-    export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-fi
+## Add the directory with pacman's binaries to the start of the PATH
+export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
 
 ## Run makepkg
-makepkg -p PSPBUILD "$@"
+makepkg "$@"
