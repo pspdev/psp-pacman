@@ -229,11 +229,6 @@ run_pacman() {
 		cmd=("$PACMAN_PATH" "$@")
 	else
 		cmd=("$PACMAN_PATH" "${PACMAN_OPTS[@]}" "$@")
-		if type -p sudo >/dev/null; then
-			cmd=(sudo "${cmd[@]}")
-		else
-			cmd=(su root -c "$(printf '%q ' "${cmd[@]}")")
-		fi
 		local lockfile="$(pacman-conf DBPath)/db.lck"
 		while [[ -f $lockfile ]]; do
 			local timer=0
