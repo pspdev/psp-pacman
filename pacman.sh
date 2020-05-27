@@ -30,7 +30,13 @@ if ! which "pacman" >/dev/null 2>&1; then
     ## Will probably not be needed for the next version of pacman
     apply_patch pacman-${PACMAN_VERSION}
 
-    if [ "$(uname)" != "Darwin" ]; then
+    if [ "$(uname)" == "Darwin" ]; then
+        BPFX="`brew --prefix`"
+        # link in keg-only deps
+        export PKG_CONFIG_PATH="$BPFX/opt/libarchive/lib/pkgconfig:$BPFX/opt/openssl/lib/pkgconfig"
+        # use 'install' from coreutils
+        export PATH="$BPFX/opt/coreutils/libexec/gnubin:$PATH"
+    else
         ## Install meson and ninja in the current directory
         setup_build_system
     fi
@@ -50,10 +56,10 @@ fi
 
 ## Install configuration files and wrapper script
 cd "${BASE_PATH}"
-install -D -m 644 config/pacman.conf "${PSPDEV}/etc/pacman.conf"
-install -D -m 644 config/makepkg.conf "${PSPDEV}/etc/makepkg.conf"
-install -D -m 755 scripts/psp-pacman "${PSPDEV}/bin/psp-pacman"
-install -D -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
+mkdir -p "${PSPDEV}/bin"
+mkdir -p "${PSPDEV}/etc"
+install -m755 scripts/psp-{pacman,makepkg} "${PSPDEV}/bin"
+install -m644 config/{pacman,makepkg}.conf "${PSPDEV}/etc"
 
 ## Make sure the dbpath directory exists
 mkdir -p "${PSPDEV}/var/lib/pacman"

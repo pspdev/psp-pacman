@@ -35,13 +35,6 @@ jobs:
 
     - name: Build and Install Pacman
       run: |
-        if [ "$(uname)" == "Darwin" ]; then
-          BPFX="`brew --prefix`"
-          # link in keg-only deps
-          export PKG_CONFIG_PATH="$BPFX/opt/libarchive/lib/pkgconfig:$BPFX/opt/openssl/lib/pkgconfig"
-          # use 'install' from coreutils
-          export PATH="$BPFX/opt/coreutils/libexec/gnubin:$PATH"
-        fi
         export PSPDEV=$PWD/pspdev
         export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
