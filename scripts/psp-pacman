@@ -22,5 +22,14 @@ fi
 ## Add the directory with pacman's binaries to the start of the PATH
 export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
 
-## Run pacman
-pacman "$@"
+## Run pacman and make sure to use the current PSPDEV
+pacman \
+  --root "${PSPDEV}" \
+  --dbpath "${PSPDEV}/var/lib/pacman" \
+  --config "${PSPDEV}/etc/pacman.conf" \
+  --cachedir "${PSPDEV}/var/cache/pacman/pkg" \
+  --gpgdir "${PSPDEV}/etc/pacman.d/gnupg/" \
+  --logfile "${PSPDEV}/var/log/pacman.log" \
+  --hookdir "${PSPDEV}/share/libalpm/hooks" \
+  --hookdir "${PSPDEV}/etc/pacman.d/hooks" \
+  "$@"
