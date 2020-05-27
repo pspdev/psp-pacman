@@ -317,26 +317,15 @@ libalpm_a = static_library(
   # https://github.com/mesonbuild/meson/issues/3937
   objects : libcommon.extract_all_objects(),
   include_directories : includes,
-  dependencies : alpm_deps)
+  dependencies : alpm_deps,
+  install : false)
 
 libalpm = library(
   'alpm',
   version : libalpm_version,
   objects: libalpm_a.extract_all_objects(recursive: true),
   dependencies : alpm_deps,
-  install : true)
-
-install_headers(
-  'lib/libalpm/alpm.h',
-  'lib/libalpm/alpm_list.h')
-
-pkgconfig = import('pkgconfig')
-pkgconfig.generate(
-  libalpm,
-  name : 'libalpm',
-  description : 'Arch Linux package management library',
-  version : libalpm_version,
-  url : 'http://www.archlinux.org/pacman/')
+  install : false)
 
 pacman_bin = executable(
   'pacman',
