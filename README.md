@@ -1,4 +1,4 @@
-# PSP Pacman
+# PSP Pacman ![CI](https://github.com/pspdev/psp-pacman/workflows/CI/badge.svg)
 
 This respository contains all the files needed to build and install the pacman package managed for the PSP toolchain. Pacman can be used to build and manage packages with libraries for the PSP.
 
