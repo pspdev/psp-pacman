@@ -1126,7 +1126,8 @@ int main(int argc, char *argv[])
 	}
 
 	/* check if we have sufficient permission for the requested operation */
-	if(myuid > 0 && needs_root()) {
+	/* pspdev: since we always force a root dir, check write access */
+	if(myuid > 0 && needs_root() && (access(config->rootdir, W_OK) != 0)) {
 		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
 		cleanup(EXIT_FAILURE);
 	}
