@@ -45,12 +45,7 @@ if not have_bash
   error('bash >= 4.4.0 is required for pacman scripts.')
 endif
 
-bashcompletion = dependency('bash-completion', required : false)
-if bashcompletion.found()
-  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
-else
-  BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
-endif
+BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
 
 if get_option('use-git-version')
   PACKAGE_VERSION = run_command(
