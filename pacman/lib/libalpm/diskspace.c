@@ -71,7 +71,7 @@ static void mount_point_list_free(alpm_list_t *mount_points)
 
 static int mount_point_load_fsinfo(alpm_handle_t *handle, alpm_mountpoint_t *mountpoint)
 {
-#if defined(HAVE_GETMNTENT)
+#if defined(HAVE_GETMNTENT) && !defined(HAVE_GETMNTINFO)
 	/* grab the filesystem usage */
 	if(statvfs(mountpoint->mount_dir, &(mountpoint->fsp)) != 0) {
 		_alpm_log(handle, ALPM_LOG_WARNING,

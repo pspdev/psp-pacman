@@ -32,6 +32,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+	#include <signal.h>
+#endif
+
 /* pacman */
 #include "conf.h"
 #include "ini.h"

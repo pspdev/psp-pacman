@@ -34,6 +34,14 @@
 #include <fnmatch.h>
 #include <poll.h>
 
+#ifdef __APPLE__
+	#include <signal.h>
+	/* deprecated */
+	#define SIGPOLL 7
+	/* not available */
+	#define MSG_NOSIGNAL 0
+#endif
+
 /* libarchive */
 #include <archive.h>
 #include <archive_entry.h>

@@ -74,9 +74,14 @@ conf.set_quoted('CACHEDIR', join_paths(LOCALSTATEDIR, 'cache/pacman/pkg/'))
 conf.set_quoted('HOOKDIR', join_paths(SYSCONFDIR, 'pacman.d/hooks/'))
 conf.set_quoted('ROOTDIR', ROOTDIR)
 
+libintl = []
 if get_option('i18n')
+  # pspdev: first check in libc, fallback to libintl
   if not cc.has_function('ngettext')
-    error('ngettext not found but NLS support requested')
+    libintl = cc.find_library('intl', required : false)
+    if not libintl.found()
+      error('ngettext not found but NLS support requested')
+    endif
   endif
   conf.set('ENABLE_NLS', 1)
 endif
@@ -149,8 +154,9 @@ foreach member : [
     ['struct statfs', 'f_flags', '''#include <sys/param.h>
                                     #include <sys/mount.h>'''],
   ]
-  have = cc.has_member(member[0], member[1], prefix : member[2])
-  conf.set('HAVE_' + '_'.join([member[0], member[1]]).underscorify().to_upper(), have)
+  if cc.has_member(member[0], member[1], prefix : member[2])
+    conf.set('HAVE_' + '_'.join([member[0], member[1]]).underscorify().to_upper(), 1)
+  endif
 endforeach
 
 foreach type : [
@@ -168,10 +174,10 @@ foreach type : [
   endif
 endforeach
 
-if conf.has('HAVE_STRUCT_STATVFS_F_FLAG')
-  conf.set('FSSTATSTYPE', 'struct statvfs')
-elif conf.has('HAVE_STRUCT_STATFS_F_FLAGS')
+if conf.has('HAVE_STRUCT_STATFS_F_FLAGS')
   conf.set('FSSTATSTYPE', 'struct statfs')
+elif conf.has('HAVE_STRUCT_STATVFS_F_FLAG')
+  conf.set('FSSTATSTYPE', 'struct statvfs')
 endif
 
 if get_option('buildtype').startswith('debug')
@@ -309,7 +315,7 @@ libcommon = static_library(
   include_directories : includes,
   install : false)
 
-alpm_deps = [crypto_provider, libarchive, libcurl, gpgme]
+alpm_deps = [libintl, crypto_provider, libarchive, libcurl, gpgme]
 
 libalpm_a = static_library(
   'alpm_objlib',
