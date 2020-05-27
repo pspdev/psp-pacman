@@ -277,7 +277,8 @@ static int key_import_wkd(alpm_handle_t *handle, const char *email)
 	CHECK_ERR();
 
 	mode = gpgme_get_keylist_mode(ctx);
-	mode |= GPGME_KEYLIST_MODE_LOCATE;
+	/* pspdev: LOCATE alias is only available in 1.11.0 or newer */
+	mode |= (GPGME_KEYLIST_MODE_LOCAL|GPGME_KEYLIST_MODE_EXTERN);
 	gpg_err = gpgme_set_keylist_mode(ctx, mode);
 	CHECK_ERR();
 
