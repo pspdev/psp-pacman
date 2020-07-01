@@ -2,29 +2,32 @@
 
 ## Make sure PSPDEV is set
 if [ -z "${PSPDEV}" ]; then
-    export PSPDEV=/usr/local/pspdev
+    echo "The PSPDEV environment variable has not been set"
+    exit 1
 fi
 
 if [ ! -d "${PSPDEV}" ]; then
     echo "${PSPDEV} does not exist"
-    exit 1
+    exit 2
 fi
 
 ## Use sudo if the current user doesn't own $PSPDEV
 if ! touch "${PSPDEV}" >/dev/null 2>&1; then
-    ## And only when not using the T or Q option
-    if ! [[ $1 = -@(T|Q|V|h)*([[:alpha:]]) ]] && !  [[ $1 = --@(deptest|query|help|version)*([[:alpha:]]) ]]; then
-        sudo "$0" "$@"
-        exit $?
-    fi
+    sudo PSPDEV="${PSPDEV}" "$0" "$@"
+    exit $?
 fi
 
-## Use pacman in $PSPDEV if needed
-if ! which "pacman" >/dev/null 2>&1; then
-    export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
-fi
+## Add the directory with pacman's binaries to the start of the PATH
+export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
 
-## Run pacman
-pacman --root "${PSPDEV}" \
+## Run pacman and make sure to use the current PSPDEV
+pacman \
+  --root "${PSPDEV}" \
   --dbpath "${PSPDEV}/var/lib/pacman" \
-  --config "${PSPDEV}/etc/pacman.conf" "$@"
+  --config "${PSPDEV}/etc/pacman.conf" \
+  --cachedir "${PSPDEV}/var/cache/pacman/pkg" \
+  --gpgdir "${PSPDEV}/etc/pacman.d/gnupg/" \
+  --logfile "${PSPDEV}/var/log/pacman.log" \
+  --hookdir "${PSPDEV}/share/libalpm/hooks" \
+  --hookdir "${PSPDEV}/etc/pacman.d/hooks" \
+  "$@"
