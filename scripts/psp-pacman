@@ -13,7 +13,7 @@ fi
 
 ## Use sudo if the current user doesn't own $PSPDEV
 if ! touch "${PSPDEV}" >/dev/null 2>&1; then
-    sudo "$0" "$@"
+    sudo PSPDEV="${PSPDEV}" "$0" "$@"
     exit $?
 fi
 
