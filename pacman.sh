@@ -5,10 +5,6 @@
 set -e
 set -u
 
-## Remove $CC and $CXX for configure
-unset CC
-unset CXX
-
 ## Enter the psp-pacman directory.
 cd "$(dirname "$0")"
 
