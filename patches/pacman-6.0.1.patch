@@ -1,0 +1,89 @@
+diff --git a/lib/libalpm/util.c b/lib/libalpm/util.c
+index be70134b..fb35a0df 100644
+--- a/lib/libalpm/util.c
++++ b/lib/libalpm/util.c
+@@ -484,6 +484,12 @@ static int _alpm_chroot_write_to_child(alpm_handle_t *handle, int fd,
+ 		}
+ 	}
+ 
++#if defined(__APPLE__)
++#ifndef MSG_NOSIGNAL
++#define MSG_NOSIGNAL SO_NOSIGPIPE
++#endif
++#endif
++
+ 	nwrite = send(fd, buf, *buf_size, MSG_NOSIGNAL);
+ 
+ 	if(nwrite != -1) {
+diff --git a/meson.build b/meson.build
+index 76b9d2aa..673324ca 100644
+--- a/meson.build
++++ b/meson.build
+@@ -41,12 +41,7 @@ if not have_bash
+   error('bash >= 4.4.0 is required for pacman scripts.')
+ endif
+ 
+-bashcompletion = dependency('bash-completion', required : false)
+-if bashcompletion.found()
+-  BASHCOMPDIR = bashcompletion.get_pkgconfig_variable('completionsdir')
+-else
+-  BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+-endif
++BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
+ 
+ if get_option('use-git-version')
+   PACKAGE_VERSION = run_command(
+@@ -175,7 +170,8 @@ foreach type : [
+   endif
+ endforeach
+ 
+-if conf.has('HAVE_STRUCT_STATVFS_F_FLAG')
++os = host_machine.system()
++if conf.has('HAVE_STRUCT_STATVFS_F_FLAG') and not os.startswith('darwin')
+   conf.set('FSSTATSTYPE', 'struct statvfs')
+ elif conf.has('HAVE_STRUCT_STATFS_F_FLAGS')
+   conf.set('FSSTATSTYPE', 'struct statfs')
+@@ -235,7 +231,6 @@ if file_seccomp.enabled() or ( file_seccomp.auto() and filever.version_compare('
+   filecmd = 'file -S'
+ endif
+ 
+-os = host_machine.system()
+ if os.startswith('darwin')
+   inodecmd = '/usr/bin/stat -f \'%i %N\''
+   strip_binaries = ''
+diff --git a/scripts/makepkg.sh.in b/scripts/makepkg.sh.in
+index e58edfa1..03a9709e 100644
+--- a/scripts/makepkg.sh.in
++++ b/scripts/makepkg.sh.in
+@@ -231,17 +231,6 @@ run_pacman() {
+ 	else
+ 		cmd=("$PACMAN_PATH" "${PACMAN_OPTS[@]}" "$@")
+ 		cmdescape="$(printf '%q ' "${cmd[@]}")"
+-		if (( ${#PACMAN_AUTH[@]} )); then
+-			if in_array '%c' "${PACMAN_AUTH[@]}"; then
+-				cmd=("${PACMAN_AUTH[@]/\%c/$cmdescape}")
+-			else
+-				cmd=("${PACMAN_AUTH[@]}" "${cmd[@]}")
+-			fi
+-		elif type -p sudo >/dev/null; then
+-			cmd=(sudo "${cmd[@]}")
+-		else
+-			cmd=(su root -c "$cmdescape")
+-		fi
+ 		local lockfile="$(pacman-conf DBPath)/db.lck"
+ 		while [[ -f $lockfile ]]; do
+ 			local timer=0
+diff --git a/src/pacman/pacman.c b/src/pacman/pacman.c
+index e398855a..15b00de4 100644
+--- a/src/pacman/pacman.c
++++ b/src/pacman/pacman.c
+@@ -1131,7 +1131,8 @@ int main(int argc, char *argv[])
+ 	}
+ 
+ 	/* check if we have sufficient permission for the requested operation */
+-	if(myuid > 0 && needs_root()) {
++	/* pspdev: since we always force a root dir, check write access */
++	if(myuid > 0 && needs_root() && (access(config->rootdir, W_OK) != 0)) {
+ 		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
+ 		cleanup(EXIT_FAILURE);
+ 	}
