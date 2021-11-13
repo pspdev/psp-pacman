@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/fjtrujy/psp-pkgconf:latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        apk add build-base bash python3 py3-pip cmake pkgconfig libarchive-dev openssl-dev gpgme-dev
+
+    - name: Compile project
+      run: |
+        ./pacman.sh
+
+    - name: Get short SHA
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+  
+  build-VM:
+    runs-on: ${{ matrix.os[0] }}
+    strategy:
+      matrix:
+        os: [[macos-latest, bash], [ubuntu-latest, bash]]
+      fail-fast: false
+    defaults:
+     run:
+      shell: ${{ matrix.os[1] }} {0}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Ubuntu texinfo bison flex libucl-dev
+      if: matrix.os[0] == 'ubuntu-latest'
+      run: |
+        sudo apt-get -y install texinfo bison flex gettext libgmp3-dev libmpfr-dev libmpc-dev libusb-dev libreadline-dev libcurl4 libcurl4-openssl-dev libssl-dev libarchive-dev libgpgme-dev
+        echo "MSYSTEM=x64" >> $GITHUB_ENV
+
+    - name: Install Mac texinfo bison flex ucl
+      if: matrix.os[0] == 'macOS-latest'
+      run: |
+        brew install gettext texinfo bison flex gnu-sed ncurses gsl gmp mpfr autoconf automake cmake libusb-compat libarchive gpgme bash openssl libtool
+        echo "MSYSTEM=x64" >> $GITHUB_ENV
+
+    # - name: Install MSYS2 texinfo bison flex
+    #   if: matrix.os[0] == 'windows-latest'
+    #   uses: msys2/setup-msys2@v2
+    #   with:
+    #     msystem: MINGW32
+    #     install: |
+    #       base-devel git make texinfo flex bison patch binutils mingw-w64-i686-gcc mpc-devel tar
+    #       mingw-w64-i686-cmake mingw-w64-i686-extra-cmake-modules mingw-w64-i686-make
+    #     update: true
+    #     shell: msys2 {0}
+
+    - name: Compile Tools
+      run: |
+        export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+        export PATH="/usr/local/opt/libtool/libexec/gnubin:$PATH"
+        export PKG_CONFIG_PATH="/usr/local/opt/libarchive/lib/pkgconfig:/usr/local/opt/openssl@3/lib/pkgconfig"
+        export PSPDEV=$PWD/pspdev
+        export PATH=$PATH:$PSPDEV/bin
+        ./pacman.sh
