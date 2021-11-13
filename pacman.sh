@@ -16,14 +16,14 @@ cd "$(dirname "$0")"
 source common.sh
 
 ## Variables used to build
-PACMAN_VERSION="5.2.1"
+PACMAN_VERSION="6.0.1"
 INSTALL_DIR="${PSPDEV}/share/pacman"
 BASE_PATH="${PWD}"
 
 ## Prepare the build environment
 mkdir -p "${BASE_PATH}/build"
 cd "${BASE_PATH}/build"
-download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.gz pacman-${PACMAN_VERSION}
+download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.xz pacman-${PACMAN_VERSION}
 
 ## Apply patch
 apply_patch pacman-${PACMAN_VERSION}
@@ -32,10 +32,9 @@ apply_patch pacman-${PACMAN_VERSION}
 setup_build_system
 
 ## Build pacman
-meson build
-meson configure build -Dprefix="${PSPDEV}" --buildtype=release \
+meson build -Dprefix="${PSPDEV}" --buildtype=release \
   -Ddefault_library=static  -Dbuildscript=PSPBUILD \
-  -Droot-dir="${PSPDEV}" -Dbindir="${PSPDEV}/share/pacman/bin" \
+  -Dprefix="${PSPDEV}" -Dsysconfdir="${PSPDEV}/etc" -Dbindir="${PSPDEV}/share/pacman/bin" -Dlocalstatedir="${PSPDEV}/var" \
   -Ddoc=disabled -Di18n=false
 cd build
 ninja
@@ -45,10 +44,12 @@ ninja install
 
 ## Install configuration files and wrapper script
 cd "${BASE_PATH}"
-install -D -m 644 config/pacman.conf "${PSPDEV}/etc/pacman.conf"
-install -D -m 644 config/makepkg.conf "${PSPDEV}/etc/makepkg.conf"
-install -D -m 755 scripts/psp-pacman "${PSPDEV}/bin/psp-pacman"
-install -D -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
+install -d "${PSPDEV}/etc/"
+install -m 644 config/pacman.conf "${PSPDEV}/etc/pacman.conf"
+install -m 644 config/makepkg.conf "${PSPDEV}/etc/makepkg.conf"
+install -d "${PSPDEV}/bin/"
+install -m 755 scripts/psp-pacman "${PSPDEV}/bin/psp-pacman"
+install -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
 
 ## Make sure the dbpath directory exists
 mkdir -p "${PSPDEV}/var/lib/pacman"
