@@ -65,6 +65,43 @@ index 76b9d2a..673324c 100644
  if os.startswith('darwin')
    inodecmd = '/usr/bin/stat -f \'%i %N\''
    strip_binaries = ''
+diff --git a/scripts/libmakepkg/executable/strip.sh.in b/scripts/libmakepkg/executable/strip.sh.in
+index d4d53b9..5226fce 100644
+--- a/scripts/libmakepkg/executable/strip.sh.in
++++ b/scripts/libmakepkg/executable/strip.sh.in
+@@ -30,8 +30,8 @@ executable_functions+=('executable_strip')
+ 
+ executable_strip() {
+ 	if check_option "strip" "y"; then
+-		if ! type -p strip >/dev/null; then
+-			error "$(gettext "Cannot find the %s binary required for object file stripping.")" "strip"
++		if ! type -p psp-strip >/dev/null; then
++			error "$(gettext "Cannot find the %s binary required for object file stripping.")" "psp-strip"
+ 			return 1
+ 		fi
+ 	fi
+diff --git a/scripts/libmakepkg/tidy/strip.sh.in b/scripts/libmakepkg/tidy/strip.sh.in
+index 9660253..5c52ee0 100644
+--- a/scripts/libmakepkg/tidy/strip.sh.in
++++ b/scripts/libmakepkg/tidy/strip.sh.in
+@@ -97,7 +97,7 @@ strip_file() {
+ 	fi
+ 
+ 	local tempfile=$(mktemp "$binary.XXXXXX")
+-	if strip "$@" "$binary" -o "$tempfile"; then
++	if psp-strip "$@" "$binary" -o "$tempfile"; then
+ 		cat "$tempfile" > "$binary"
+ 	fi
+ 	rm -f "$tempfile"
+@@ -107,7 +107,7 @@ strip_lto() {
+ 	local binary=$1;
+ 
+ 	local tempfile=$(mktemp "$binary.XXXXXX")
+-	if strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
++	if psp-strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
+ 		cat "$tempfile" > "$binary"
+ 	fi
+ 	rm -f "$tempfile"
 diff --git a/scripts/makepkg.sh.in b/scripts/makepkg.sh.in
 index e58edfa..03a9709 100644
 --- a/scripts/makepkg.sh.in
