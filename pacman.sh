@@ -25,6 +25,12 @@ mkdir -p "${BASE_PATH}/build"
 cd "${BASE_PATH}/build"
 download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.xz pacman-${PACMAN_VERSION}
 
+## Fix some lines in the scripts which have hardcoded paths
+find ./ -type f -name "*.in" -exec sed -i -e "s#LIBRARY=\${LIBRARY:-'@libmakepkgdir@'}#LIBRARY=\${LIBRARY:-\"\${PSPDEV}/share/makepkg\"}#g" {} \;
+find ./ -type f -name "*.in" -exec sed -i -e "s#declare -r confdir='@sysconfdir@'#declare -r confdir=\"\${PSPDEV}/etc\"#g" {} \;
+find ./ -type f -name "*.in" -exec sed -i -e "s#export TEXTDOMAINDIR='@localedir@'#export TEXTDOMAINDIR=\"\${PSPDEV}/share/locale\"#g" {} \;
+find ./ -type f -name "*.in" -exec sed -i -e 's#@libmakepkgdir@#${PSPDEV}/share/makepkg#g' {} \;
+
 ## Apply patch
 apply_patch pacman-${PACMAN_VERSION}
 
