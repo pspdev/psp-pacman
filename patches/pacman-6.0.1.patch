@@ -1,8 +1,22 @@
+diff --git a/lib/libalpm/add.c b/lib/libalpm/add.c
+index f806e5b..fcd1bfc 100644
+--- a/lib/libalpm/add.c
++++ b/lib/libalpm/add.c
+@@ -115,8 +115,7 @@ static int perform_extraction(alpm_handle_t *handle, struct archive *archive,
+ {
+ 	int ret;
+ 	struct archive *archive_writer;
+-	const int archive_flags = ARCHIVE_EXTRACT_OWNER |
+-	                          ARCHIVE_EXTRACT_PERM |
++	const int archive_flags = ARCHIVE_EXTRACT_PERM |
+ 	                          ARCHIVE_EXTRACT_TIME |
+ 	                          ARCHIVE_EXTRACT_UNLINK |
+ 	                          ARCHIVE_EXTRACT_XATTR |
 diff --git a/lib/libalpm/util.c b/lib/libalpm/util.c
-index be70134b..fb35a0df 100644
+index 299d287..90ae42c 100644
 --- a/lib/libalpm/util.c
 +++ b/lib/libalpm/util.c
-@@ -484,6 +484,12 @@ static int _alpm_chroot_write_to_child(alpm_handle_t *handle, int fd,
+@@ -475,6 +475,12 @@ static int _alpm_chroot_write_to_child(alpm_handle_t *handle, int fd,
  		}
  	}
  
@@ -16,7 +30,7 @@ index be70134b..fb35a0df 100644
  
  	if(nwrite != -1) {
 diff --git a/meson.build b/meson.build
-index 76b9d2aa..673324ca 100644
+index 76b9d2a..673324c 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -41,12 +41,7 @@ if not have_bash
@@ -52,7 +66,7 @@ index 76b9d2aa..673324ca 100644
    inodecmd = '/usr/bin/stat -f \'%i %N\''
    strip_binaries = ''
 diff --git a/scripts/makepkg.sh.in b/scripts/makepkg.sh.in
-index e58edfa1..03a9709e 100644
+index e58edfa..03a9709 100644
 --- a/scripts/makepkg.sh.in
 +++ b/scripts/makepkg.sh.in
 @@ -231,17 +231,6 @@ run_pacman() {
@@ -74,7 +88,7 @@ index e58edfa1..03a9709e 100644
  		while [[ -f $lockfile ]]; do
  			local timer=0
 diff --git a/src/pacman/pacman.c b/src/pacman/pacman.c
-index e398855a..15b00de4 100644
+index e398855..15b00de 100644
 --- a/src/pacman/pacman.c
 +++ b/src/pacman/pacman.c
 @@ -1131,7 +1131,8 @@ int main(int argc, char *argv[])
@@ -87,17 +101,3 @@ index e398855a..15b00de4 100644
  		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
  		cleanup(EXIT_FAILURE);
  	}
-diff --git a/lib/libalpm/add.c b/lib/libalpm/add.c
-index f806e5b..fcd1bfc 100644
---- a/lib/libalpm/add.c
-+++ b/lib/libalpm/add.c
-@@ -115,8 +115,7 @@ static int perform_extraction(alpm_handle_t *handle, struct archive *archive,
- {
-        int ret;
-        struct archive *archive_writer;
--       const int archive_flags = ARCHIVE_EXTRACT_OWNER |
--                                 ARCHIVE_EXTRACT_PERM |
-+       const int archive_flags = ARCHIVE_EXTRACT_PERM |
-                                  ARCHIVE_EXTRACT_TIME |
-                                  ARCHIVE_EXTRACT_UNLINK |
-                                  ARCHIVE_EXTRACT_XATTR |
