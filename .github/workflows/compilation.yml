@@ -69,3 +69,11 @@ jobs:
         export PSPDEV=$PWD/pspdev
         export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
+        
+    - name: Repository Dispatch to psptoolchain-extra
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        repository: ${{ github.repository_owner }}/psptoolchain-extra
+        token: ${{ secrets.DISPATCH_TOKEN }}
+        event-type: ${{ env.NEW_DISPATCH_ACTION }}
+        client-payload: '{"ref": "${{ github.ref }}"}'
