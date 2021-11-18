@@ -87,3 +87,17 @@ index e398855a..15b00de4 100644
  		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
  		cleanup(EXIT_FAILURE);
  	}
+diff --git a/lib/libalpm/add.c b/lib/libalpm/add.c
+index f806e5b..fcd1bfc 100644
+--- a/lib/libalpm/add.c
++++ b/lib/libalpm/add.c
+@@ -115,8 +115,7 @@ static int perform_extraction(alpm_handle_t *handle, struct archive *archive,
+ {
+        int ret;
+        struct archive *archive_writer;
+-       const int archive_flags = ARCHIVE_EXTRACT_OWNER |
+-                                 ARCHIVE_EXTRACT_PERM |
++       const int archive_flags = ARCHIVE_EXTRACT_PERM |
+                                  ARCHIVE_EXTRACT_TIME |
+                                  ARCHIVE_EXTRACT_UNLINK |
+                                  ARCHIVE_EXTRACT_XATTR |
