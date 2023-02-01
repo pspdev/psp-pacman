@@ -47,7 +47,7 @@ jobs:
     - name: Install Mac texinfo bison flex ucl
       if: matrix.os[0] == 'macOS-latest'
       run: |
-        brew install gettext texinfo bison flex gnu-sed ncurses gsl gmp mpfr autoconf automake cmake libusb-compat libarchive gpgme bash openssl libtool
+        brew install gettext texinfo bison flex gnu-sed ncurses gsl gmp mpfr autoconf automake cmake libusb-compat libarchive gpgme bash openssl libtool libiconv
         echo "MSYSTEM=x64" >> $GITHUB_ENV
 
     # - name: Install MSYS2 texinfo bison flex
