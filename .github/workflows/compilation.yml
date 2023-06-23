@@ -22,6 +22,9 @@ jobs:
         export PSPDEV=$PWD/pspdev
         export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
+        export PATH=$PATH:$PSPDEV/bin
+        psp-pacman -V
+        psp-makepkg -V
   
   build-VM:
     runs-on: ${{ matrix.os[0] }}
@@ -55,5 +58,7 @@ jobs:
         export PATH="/usr/local/opt/libtool/libexec/gnubin:$PATH"
         export PKG_CONFIG_PATH="/usr/local/opt/libarchive/lib/pkgconfig:/usr/local/opt/openssl@3/lib/pkgconfig"
         export PSPDEV=$PWD/pspdev
-        export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
+        export PATH=$PATH:$PSPDEV/bin
+        psp-pacman -V
+        psp-makepkg -V
