@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/fjtrujy/psp-pkgconf:latest
+    container: alpine:latest
     steps:
     - uses: actions/checkout@v3
 
