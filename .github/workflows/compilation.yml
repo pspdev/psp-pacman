@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/fjtrujy/psp-pkgconf:latest
+    container: alpine:latest
     steps:
     - uses: actions/checkout@v3
 
@@ -19,11 +19,12 @@ jobs:
 
     - name: Compile project
       run: |
+        export PSPDEV=$PWD/pspdev
+        export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
-
-    - name: Get short SHA
-      id: slug
-      run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+        export PATH=$PATH:$PSPDEV/bin
+        psp-pacman -V
+        psp-makepkg -V
   
   build-VM:
     runs-on: ${{ matrix.os[0] }}
@@ -57,5 +58,7 @@ jobs:
         export PATH="/usr/local/opt/libtool/libexec/gnubin:$PATH"
         export PKG_CONFIG_PATH="/usr/local/opt/libarchive/lib/pkgconfig:/usr/local/opt/openssl@3/lib/pkgconfig"
         export PSPDEV=$PWD/pspdev
-        export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
+        export PATH=$PATH:$PSPDEV/bin
+        psp-pacman -V
+        psp-makepkg -V
