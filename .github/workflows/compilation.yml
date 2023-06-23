@@ -19,6 +19,8 @@ jobs:
 
     - name: Compile project
       run: |
+        export PSPDEV=$PWD/pspdev
+        export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
 
     - name: Get short SHA
