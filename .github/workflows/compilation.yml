@@ -22,10 +22,6 @@ jobs:
         export PSPDEV=$PWD/pspdev
         export PATH=$PATH:$PSPDEV/bin
         ./pacman.sh
-
-    - name: Get short SHA
-      id: slug
-      run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
   
   build-VM:
     runs-on: ${{ matrix.os[0] }}
