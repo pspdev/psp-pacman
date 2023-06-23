@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/fjtrujy/psp-pkgconf:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install dependencies
       run: |
@@ -23,7 +23,7 @@ jobs:
 
     - name: Get short SHA
       id: slug
-      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+      run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
   
   build-VM:
     runs-on: ${{ matrix.os[0] }}
@@ -36,7 +36,7 @@ jobs:
       shell: ${{ matrix.os[1] }} {0}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Ubuntu texinfo bison flex libucl-dev
       if: matrix.os[0] == 'ubuntu-latest'
@@ -50,17 +50,6 @@ jobs:
         brew install gettext texinfo bison flex gnu-sed ncurses gsl gmp mpfr autoconf automake cmake libusb-compat libarchive gpgme bash openssl libtool
         gsed -i '/Requires.private: iconv/d' /usr/local/opt/libarchive/lib/pkgconfig/libarchive.pc || true
         echo "MSYSTEM=x64" >> $GITHUB_ENV
-
-    # - name: Install MSYS2 texinfo bison flex
-    #   if: matrix.os[0] == 'windows-latest'
-    #   uses: msys2/setup-msys2@v2
-    #   with:
-    #     msystem: MINGW32
-    #     install: |
-    #       base-devel git make texinfo flex bison patch binutils mingw-w64-i686-gcc mpc-devel tar
-    #       mingw-w64-i686-cmake mingw-w64-i686-extra-cmake-modules mingw-w64-i686-make
-    #     update: true
-    #     shell: msys2 {0}
 
     - name: Compile Tools
       run: |
