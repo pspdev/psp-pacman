@@ -138,3 +138,15 @@ index e398855..15b00de 100644
  		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
  		cleanup(EXIT_FAILURE);
  	}
+diff --git a/scripts/libmakepkg/lint_package/dotfiles.sh.in b/scripts/libmakepkg/lint_package/dotfiles.sh.in
+index 0b993dd4..4c447bd0 100644
+--- a/scripts/libmakepkg/lint_package/dotfiles.sh.in
++++ b/scripts/libmakepkg/lint_package/dotfiles.sh.in
+@@ -34,6 +34,7 @@ check_dotfiles() {
+ 	shopt -s nullglob
+ 
+ 	for f in "$pkgdir"/.*; do
++		[[ -e "${f}" ]] || continue
+ 		[[ ${f##*/} == . || ${f##*/} == .. ]] && continue
+ 		error "$(gettext "Dotfile found in package root '%s'")" "$f"
+ 		ret=1
