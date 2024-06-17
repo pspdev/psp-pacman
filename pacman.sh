@@ -60,5 +60,12 @@ install -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
 ## Make sure the dbpath directory exists
 mkdir -p "${PSPDEV}/var/lib/pacman"
 
+## Store build information
+BUILD_FILE="${PSPDEV}/build.txt"
+if [[ -f "${BUILD_FILE}" ]]; then
+  sed -i'' '/^psp-pacman /d' "${BUILD_FILE}"
+fi
+git log -1 --format="psp-pacman %H %cs %s" >> "${BUILD_FILE}"
+
 ## Done
 echo "psp-pacman installation finished."
