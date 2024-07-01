@@ -23,7 +23,7 @@ BASE_PATH="${PWD}"
 ## Prepare the build environment
 mkdir -p "${BASE_PATH}/build"
 cd "${BASE_PATH}/build"
-download_and_extract https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.xz pacman-${PACMAN_VERSION}
+download_and_extract https://gitlab.archlinux.org/pacman/pacman/-/archive/v${PACMAN_VERSION}/pacman-v${PACMAN_VERSION}.tar.gz pacman-v${PACMAN_VERSION}
 
 ## Fix some lines in the scripts which have hardcoded paths
 find ./ -type f -name "*.in" -exec sed -i -e "s#LIBRARY=\${LIBRARY:-'@libmakepkgdir@'}#LIBRARY=\${LIBRARY:-\"\${PSPDEV}/share/makepkg\"}#g" {} \;
