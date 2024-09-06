@@ -34,8 +34,8 @@ find ./ -type f -name "*.in" -exec sed -i -e 's#@libmakepkgdir@#${PSPDEV}/share/
 ## Apply patch
 apply_patch pacman-${PACMAN_VERSION}
 
-## Install meson and ninja in the current directory
-setup_build_system
+## Install meson and ninja
+pip install meson ninja
 
 ## Build pacman
 meson build -Dprefix="${PSPDEV}" --buildtype=release \
