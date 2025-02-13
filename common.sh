@@ -47,10 +47,3 @@ function download_and_extract
 function apply_patch {
     patch -p1 < "${BASE_PATH}/patches/$1.patch"
 }
-
-## Install meson and ninja in the current directory using a venv
-function setup_build_system {
-    python3 -m venv venv
-    . venv/bin/activate
-    pip install meson ninja
-}
