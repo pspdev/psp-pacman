@@ -19,4 +19,4 @@ export MAKEPKG_CONF="${PSPDEV}/etc/makepkg.conf"
 export PATH="${PSPDEV}/share/pacman/bin:${PATH}"
 
 ## Run makepkg
-makepkg "$@"
+CARCH="$(${PSPDEV}/share/pacman/bin/get-arch)"  makepkg "$@"

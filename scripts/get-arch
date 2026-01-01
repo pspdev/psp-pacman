@@ -1,0 +1,26 @@
+#!/bin/bash
+
+KERNEL="$(uname -s)"
+ARCH="$(uname -m)"
+
+OS=""
+if [ "${KERNEL}" == "Darwin" ]; then
+  OS="macos"
+elif [ "${KERNEL}" == "Linux" ]; then
+  TESTOS=$(cat /etc/os-release | grep -w "ID" | cut -d '=' -f2 | tr -d '"')
+  case $TESTOS in
+    debian)
+      OS="debian"
+    ;;
+    fedora | rhel)
+      OS="fedora"
+    ;;
+    *)
+      OS="ubuntu"
+    ;;
+  esac
+else
+  OS="${KERNEL}"
+fi
+
+echo "${OS}_${ARCH}"

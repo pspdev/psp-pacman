@@ -30,4 +30,4 @@ pacman \
   --logfile "${PSPDEV}/var/log/pacman.log" \
   --hookdir "${PSPDEV}/share/libalpm/hooks" \
   --hookdir "${PSPDEV}/etc/pacman.d/hooks" \
-  "$@"
+  --arch "$(${PSPDEV}/share/pacman/bin/get-arch)" "$@"
