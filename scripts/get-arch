@@ -16,7 +16,7 @@ elif [ "${KERNEL}" == "Linux" ]; then
       OS="fedora"
     ;;
     *)
-      OS="ubuntu"
+      OS="linux"
     ;;
   esac
 else
