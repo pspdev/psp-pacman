@@ -57,7 +57,7 @@ install -m 644 config/makepkg.conf "${PSPDEV}/etc/makepkg.conf"
 install -d "${PSPDEV}/bin/"
 install -m 755 scripts/psp-pacman "${PSPDEV}/bin/psp-pacman"
 install -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
-install -D -m 755 scripts/get-arch "${PSPDEV}/share/pacman/bin/get-arch"
+install -m 755 scripts/get-arch "${PSPDEV}/share/pacman/bin/get-arch"
 
 ## Make sure the dbpath directory exists
 mkdir -p "${PSPDEV}/var/lib/pacman"
