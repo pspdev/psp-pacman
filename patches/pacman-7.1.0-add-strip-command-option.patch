@@ -1,0 +1,66 @@
+diff --git a/etc/makepkg.conf.in b/etc/makepkg.conf.in
+index 1726d6bd..f3a13099 100644
+--- a/etc/makepkg.conf.in
++++ b/etc/makepkg.conf.in
+@@ -97,6 +97,8 @@ OPTIONS=(strip docs libtool staticlibs emptydirs zipman purge !debug !lto !autod
+ 
+ #-- File integrity checks to use. Valid: ck, md5, sha1, sha224, sha256, sha384, sha512, b2
+ INTEGRITY_CHECK=(ck)
++#-- The command used to strip binaries.
++STRIP_COMMAND='strip'
+ #-- Options to be used when stripping binaries. See `man strip' for details.
+ STRIP_BINARIES="@STRIP_BINARIES@"
+ #-- Options to be used when stripping shared libraries. See `man strip' for details.
+diff --git a/scripts/libmakepkg/executable/strip.sh.in b/scripts/libmakepkg/executable/strip.sh.in
+index 70aadffc..15bfa996 100644
+--- a/scripts/libmakepkg/executable/strip.sh.in
++++ b/scripts/libmakepkg/executable/strip.sh.in
+@@ -22,6 +22,7 @@
+ LIBMAKEPKG_EXECUTABLE_STRIP_SH=1
+ 
+ MAKEPKG_LIBRARY=${MAKEPKG_LIBRARY:-'@libmakepkgdir@'}
++STRIP_COMMAND=${STRIP_COMMAND:-'strip'}
+ 
+ source "$MAKEPKG_LIBRARY/util/message.sh"
+ source "$MAKEPKG_LIBRARY/util/option.sh"
+@@ -30,8 +31,8 @@ executable_functions+=('executable_strip')
+ 
+ executable_strip() {
+ 	if check_option "strip" "y"; then
+-		if ! type -p strip >/dev/null; then
+-			error "$(gettext "Cannot find the %s binary required for object file stripping.")" "strip"
++		if ! type -p "$STRIP_COMMAND" >/dev/null; then
++			error "$(gettext "Cannot find the %s binary required for object file stripping.")" "$STRIP_COMMAND"
+ 			return 1
+ 		fi
+ 	fi
+diff --git a/scripts/libmakepkg/tidy/50-strip.sh.in b/scripts/libmakepkg/tidy/50-strip.sh.in
+index 926f0ebf..a0e2030e 100644
+--- a/scripts/libmakepkg/tidy/50-strip.sh.in
++++ b/scripts/libmakepkg/tidy/50-strip.sh.in
+@@ -22,6 +22,7 @@
+ LIBMAKEPKG_TIDY_STRIP_SH=1
+ 
+ MAKEPKG_LIBRARY=${MAKEPKG_LIBRARY:-'@libmakepkgdir@'}
++STRIP_COMMAND=${STRIP_COMMAND:-'strip'}
+ 
+ source "$MAKEPKG_LIBRARY/util/message.sh"
+ source "$MAKEPKG_LIBRARY/util/option.sh"
+@@ -126,7 +127,7 @@ collect_debug_symbols() {
+ safe_strip_file(){
+ 	local binary=$1; shift
+ 	local tempfile=$(mktemp "$binary.XXXXXX")
+-	if strip "$@" "$binary" -o "$tempfile"; then
++	if "$STRIP_COMMAND" "$@" "$binary" -o "$tempfile"; then
+ 		cat "$tempfile" > "$binary"
+ 	fi
+ 	rm -f "$tempfile"
+@@ -136,7 +137,7 @@ safe_strip_lto() {
+ 	local binary=$1;
+ 
+ 	local tempfile=$(mktemp "$binary.XXXXXX")
+-	if strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
++	if "$STRIP_COMMAND" -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
+ 		cat "$tempfile" > "$binary"
+ 	fi
+ 	rm -f "$tempfile"
