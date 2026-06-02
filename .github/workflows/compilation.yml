@@ -35,7 +35,7 @@ jobs:
         dnf -y install gcc python3 python3-pip wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot
         useradd build
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Compile project
       run: |
@@ -79,7 +79,7 @@ jobs:
       fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install Ubuntu build dependencies
       if: startsWith(matrix.os, 'ubuntu')
@@ -134,7 +134,7 @@ jobs:
         export DISPATCH_ACTION="$(echo run_build)"
         echo "NEW_DISPATCH_ACTION=$DISPATCH_ACTION" >> $GITHUB_ENV
     - name: Repository Dispatch to psptoolchain-extra
-      uses: peter-evans/repository-dispatch@v3
+      uses: peter-evans/repository-dispatch@v4
       with:
         repository: ${{ github.repository_owner }}/psptoolchain-extra
         token: ${{ secrets.DISPATCH_TOKEN }}
