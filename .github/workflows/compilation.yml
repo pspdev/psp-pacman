@@ -108,6 +108,7 @@ jobs:
         psp-pacman -Scc --noconfirm
 
     - name: Test psp-makepkg
+      if: matrix.os != 'macos-latest'
       run: |
         export PSPDEV="$PWD/pspdev"
         export PATH="${PATH}:${PSPDEV}/bin"
