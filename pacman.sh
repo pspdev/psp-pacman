@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # pacman.sh by Wouter Wijsman (wwijsman@live.nl)
 
 # Exit on errors
