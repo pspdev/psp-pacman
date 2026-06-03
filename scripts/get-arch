@@ -18,7 +18,7 @@ elif [ "${KERNEL}" == "Linux" ]; then
     fedora | rhel)
       OS="fedora"
     ;;
-    ubuntu)
+    ubuntu | pop)
       OS="ubuntu"
     ;;
     *)
