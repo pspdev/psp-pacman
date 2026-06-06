@@ -8,7 +8,7 @@ index 926f0ebf..22bf0b2d 100644
  	local tempfile=$(mktemp "$binary.XXXXXX")
 -	if strip "$@" "$binary" -o "$tempfile"; then
 -		cat "$tempfile" > "$binary"
-+	if file "$binary"|grep 'MIPS' > /dev/null; then
++	if readelf -A "$binary"|grep '^ISA:'|grep 'MIPS2' > /dev/null; then
 +		if psp-strip "$@" "$binary" -o "$tempfile"; then
 +			cat "$tempfile" > "$binary"
 +		fi
@@ -25,7 +25,7 @@ index 926f0ebf..22bf0b2d 100644
  	local tempfile=$(mktemp "$binary.XXXXXX")
 -	if strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
 -		cat "$tempfile" > "$binary"
-+	if file "$binary"|grep 'MIPS' > /dev/null; then
++	if readelf -A "$binary"|grep '^ISA:'|grep 'MIPS2' > /dev/null; then
 +		if psp-strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
 +			cat "$tempfile" > "$binary"
 +		fi
