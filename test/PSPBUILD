@@ -1,0 +1,23 @@
+pkgname=psp-makepkg-test
+pkgver=1
+pkgrel=1
+pkgdesc="A package for testing if psp-makepkg is working."
+arch=(any)
+url="https://github.com/pspdev/psp-pacman"
+license=('custom:Public-Domain')
+groups=()
+depends=()
+makedepends=()
+optdepends=()
+provides=()
+source=(
+  "test.txt"
+)
+sha256sums=(
+  "SKIP"
+)
+
+package() {
+  mkdir -p "${pkgdir}/share/pacman/"
+  install -m 755 test.txt "${pkgdir}/share/pacman/test.txt"
+}

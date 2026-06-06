@@ -1,0 +1,175 @@
+diff --git a/etc/makepkg.conf.in b/etc/makepkg.conf.in
+index 1726d6bd..8cbf04bb 100644
+--- a/etc/makepkg.conf.in
++++ b/etc/makepkg.conf.in
+@@ -160,3 +160,5 @@ SRCEXT='@SRCEXT@'
+ #
+ #-- Command used to run pacman as root, instead of trying sudo and su
+ PACMAN_AUTH=()
++#-- Do not run pacman as root, only useful for user installs of pacman
++#NO_PACMAN_AUTH=1
+diff --git a/lib/libalpm/add.c b/lib/libalpm/add.c
+index 7037dec8..53f8c110 100644
+--- a/lib/libalpm/add.c
++++ b/lib/libalpm/add.c
+@@ -115,13 +115,17 @@ static int perform_extraction(alpm_handle_t *handle, struct archive *archive,
+ {
+ 	int ret;
+ 	struct archive *archive_writer;
+-	const int archive_flags = ARCHIVE_EXTRACT_OWNER |
+-	                          ARCHIVE_EXTRACT_PERM |
++	int archive_flags = ARCHIVE_EXTRACT_PERM |
+ 	                          ARCHIVE_EXTRACT_TIME |
+ 	                          ARCHIVE_EXTRACT_UNLINK |
+ 	                          ARCHIVE_EXTRACT_XATTR |
+ 	                          ARCHIVE_EXTRACT_SECURE_SYMLINKS;
+ 
++	if (getuid() == 0) {
++		/* When running as root, preserve ownership of files in the package */
++		archive_flags |= ARCHIVE_EXTRACT_OWNER;
++	}
++
+ 	archive_entry_set_pathname(entry, filename);
+ 
+ 	archive_writer = archive_write_disk_new();
+diff --git a/meson.build b/meson.build
+index 8e2444d1..b9ec3e9f 100644
+--- a/meson.build
++++ b/meson.build
+@@ -42,11 +42,14 @@ if not have_bash
+   error('bash >= 4.4.0 is required for pacman scripts.')
+ endif
+ 
+-bashcompletion = dependency('bash-completion', required : false)
+-if bashcompletion.found()
+-  BASHCOMPDIR = bashcompletion.get_variable(pkgconfig: 'completionsdir')
+-else
+-  BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
++BASHCOMPDIR = get_option('bash-completions-dir')
++if BASHCOMPDIR == ''
++  bashcompletion = dependency('bash-completion', required : false)
++  if bashcompletion.found()
++    BASHCOMPDIR = bashcompletion.get_variable(pkgconfig: 'completionsdir')
++  else
++    BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
++  endif
+ endif
+ 
+ if get_option('use-git-version')
+diff --git a/meson_options.txt b/meson_options.txt
+index d004002a..a9efd4bc 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -35,6 +35,9 @@ option('makepkg-template-dir', type : 'string', value : '/usr/share/makepkg-temp
+ option('debug-suffix', type : 'string', value : 'debug',
+        description : 'suffix for split debugging symbol packages used by makepkg')
+ 
++option('bash-completions-dir', type : 'string',
++       description : 'set the bash-completion scripts directory manually')
++
+ # dependencies, features
+ option('doc', type : 'feature', value : 'auto',
+        description : 'generate docs and manpages')
+diff --git a/scripts/makepkg.sh.in b/scripts/makepkg.sh.in
+index da1349fd..98de61a9 100644
+--- a/scripts/makepkg.sh.in
++++ b/scripts/makepkg.sh.in
+@@ -231,17 +231,19 @@ run_pacman() {
+ 		cmd=("$PACMAN_PATH" "$@")
+ 	else
+ 		cmd=("$PACMAN_PATH" "${PACMAN_OPTS[@]}" "$@")
+-		cmdescape="$(printf '%q ' "${cmd[@]}")"
+-		if (( ${#PACMAN_AUTH[@]} )); then
+-			if in_array '%c' "${PACMAN_AUTH[@]}"; then
+-				cmd=("${PACMAN_AUTH[@]/\%c/$cmdescape}")
++		if (( ! NO_PACMAN_AUTH )); then
++			cmdescape="$(printf '%q ' "${cmd[@]}")"
++			if (( ${#PACMAN_AUTH[@]} )); then
++				if in_array '%c' "${PACMAN_AUTH[@]}"; then
++					cmd=("${PACMAN_AUTH[@]/\%c/$cmdescape}")
++				else
++					cmd=("${PACMAN_AUTH[@]}" "${cmd[@]}")
++				fi
++			elif type -p sudo >/dev/null; then
++				cmd=(sudo -k "${cmd[@]}")
+ 			else
+-				cmd=("${PACMAN_AUTH[@]}" "${cmd[@]}")
++				cmd=(su root -c "$cmdescape")
+ 			fi
+-		elif type -p sudo >/dev/null; then
+-			cmd=(sudo -k "${cmd[@]}")
+-		else
+-			cmd=(su root -c "$cmdescape")
+ 		fi
+ 		local lockfile="$(pacman-conf DBPath)/db.lck"
+ 		while [[ -f $lockfile ]]; do
+diff --git a/src/pacman/pacman.c b/src/pacman/pacman.c
+index 898e886b..af249b1b 100644
+--- a/src/pacman/pacman.c
++++ b/src/pacman/pacman.c
+@@ -1222,12 +1222,6 @@ int main(int argc, char *argv[])
+ 		cleanup(ret);
+ 	}
+ 
+-	/* check if we have sufficient permission for the requested operation */
+-	if(myuid > 0 && needs_root()) {
+-		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
+-		cleanup(EXIT_FAILURE);
+-	}
+-
+ 	/* we support reading targets from stdin if a cmdline parameter is '-' */
+ 	if(alpm_list_find_str(pm_targets, "-")) {
+ 		if(!isatty(fileno(stdin))) {
+@@ -1286,6 +1280,12 @@ int main(int argc, char *argv[])
+ 		cleanup(ret);
+ 	}
+ 
++	/* check if we have sufficient permission for the requested operation */
++	if(myuid > 0 && requires_privilege_escalation()) {
++		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
++		cleanup(EXIT_FAILURE);
++	}
++
+ 	/* noask is meant to be non-interactive */
+ 	if(config->noask) {
+ 		config->noconfirm = 1;
+@@ -1322,7 +1322,7 @@ int main(int argc, char *argv[])
+ 	}
+ 
+ 	/* Log command line */
+-	if(needs_root()) {
++	if(requires_privilege_escalation()) {
+ 		cl_to_log(argc, argv);
+ 	}
+ 
+diff --git a/src/pacman/util.c b/src/pacman/util.c
+index 276df7c6..bedee160 100644
+--- a/src/pacman/util.c
++++ b/src/pacman/util.c
+@@ -120,8 +120,12 @@ int trans_release(void)
+ 	return 0;
+ }
+ 
+-int needs_root(void)
++int requires_privilege_escalation(void)
+ {
++	if (access(config->rootdir, W_OK) == 0) {
++		/* If we have write access, do not require privilege escalation */
++		return 0;
++	}
+ 	switch(config->op) {
+ 		case PM_OP_DATABASE:
+ 			return !config->op_q_check;
+diff --git a/src/pacman/util.h b/src/pacman/util.h
+index 8e081798..e5a27b88 100644
+--- a/src/pacman/util.h
++++ b/src/pacman/util.h
+@@ -51,7 +51,7 @@ void trans_init_error(void);
+ /* flags is a bitfield of alpm_transflag_t flags */
+ int trans_init(int flags, int check_valid);
+ int trans_release(void);
+-int needs_root(void);
++int requires_privilege_escalation(void);
+ int check_syncdbs(size_t need_repos, int check_valid);
+ int sync_syncdbs(int level, alpm_list_t *syncs);
+ unsigned short getcols(void);

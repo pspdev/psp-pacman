@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # pacman.sh by Wouter Wijsman (wwijsman@live.nl)
 
 # Exit on errors
@@ -16,7 +16,7 @@ cd "$(dirname "$0")"
 source common.sh
 
 ## Variables used to build
-PACMAN_VERSION="6.0.1"
+PACMAN_VERSION="7.1.0"
 INSTALL_DIR="${PSPDEV}/share/pacman"
 BASE_PATH="${PWD}"
 
@@ -25,15 +25,16 @@ mkdir -p "${BASE_PATH}/build"
 cd "${BASE_PATH}/build"
 download_and_extract https://gitlab.archlinux.org/pacman/pacman/-/archive/v${PACMAN_VERSION}/pacman-v${PACMAN_VERSION}.tar.gz pacman-v${PACMAN_VERSION}
 
+## Apply patch
+apply_patch pacman-${PACMAN_VERSION}-rootless
+apply_patch pacman-${PACMAN_VERSION}-add-strip-command-option
+
 ## Fix some lines in the scripts which have hardcoded paths
 find ./ -type f -name "*.in" -exec sed -i -e "s#LIBRARY=\${LIBRARY:-'@libmakepkgdir@'}#LIBRARY=\${LIBRARY:-\"\${PSPDEV}/share/makepkg\"}#g" {} \;
 find ./ -type f -name "*.in" -exec sed -i -e "s#declare -r confdir='@sysconfdir@'#declare -r confdir=\"\${PSPDEV}/etc\"#g" {} \;
 find ./ -type f -name "*.in" -exec sed -i -e "s#export TEXTDOMAINDIR='@localedir@'#export TEXTDOMAINDIR=\"\${PSPDEV}/share/locale\"#g" {} \;
-find ./ -type f -name "*.in" -exec sed -i -e 's#@libmakepkgdir@#${PSPDEV}/share/makepkg#g' {} \;
-
-## Apply patch
-apply_patch pacman-${PACMAN_VERSION}
-apply_patch 147 # Fixes https://github.com/pspdev/psp-pacman/issues/37
+find ./ -type f -name "*.in" -exec sed -i -e "s#'@libmakepkgdir@'#\${PSPDEV}/share/makepkg#g" {} \;
+find ./ -type f -name "*.in" -exec sed -i -e "s#@libmakepkgdir@#\${PSPDEV}/share/makepkg#g" {} \;
 
 ## Install meson and ninja in the current directory
 setup_build_system
@@ -41,8 +42,8 @@ setup_build_system
 ## Build pacman
 meson build -Dprefix="${PSPDEV}" --buildtype=release \
   -Ddefault_library=static  -Dbuildscript=PSPBUILD \
-  -Dprefix="${PSPDEV}" -Dsysconfdir="${PSPDEV}/etc" -Dbindir="${PSPDEV}/share/pacman/bin" -Dlocalstatedir="${PSPDEV}/var" \
-  -Ddoc=disabled -Di18n=false
+  -Droot-dir="${PSPDEV}" -Dsysconfdir="etc" -Dmakepkg-template-dir="share/makepkg-template" -Dbindir="share/pacman/bin" -Dlocalstatedir="var" \
+  -Ddoc=disabled -Di18n=false -Dbash-completions-dir="share/bash-completion/completions"
 cd build
 ninja
 
@@ -58,6 +59,9 @@ install -d "${PSPDEV}/bin/"
 install -m 755 scripts/psp-pacman "${PSPDEV}/bin/psp-pacman"
 install -m 755 scripts/psp-makepkg "${PSPDEV}/bin/psp-makepkg"
 install -m 755 scripts/get-arch "${PSPDEV}/share/pacman/bin/get-arch"
+install -d "${PSPDEV}/etc/pacman.d/gnupg/"
+install -d "${PSPDEV}/var/log/"
+install -d "${PSPDEV}/etc/pacman.d/hooks"
 
 ## Make sure the dbpath directory exists
 mkdir -p "${PSPDEV}/var/lib/pacman"
