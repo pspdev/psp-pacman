@@ -84,6 +84,7 @@ jobs:
     - name: Install Ubuntu build dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
+        sudo apt-get update
         sudo apt-get -y install libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev sudo
 
     - name: Install Mac build dependencies
