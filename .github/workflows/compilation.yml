@@ -57,8 +57,6 @@ jobs:
       run: |
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
-        # Prevent stripping, since PSPDEV is not actually installed
-        sed -i '/^OPTIONS=/s/strip/!strip/' ${PSPDEV}/etc/makepkg.conf
         chown -R build:build test ${PSPDEV}
         cd test
         sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 $(which psp-makepkg) -i --noconfirm --noprogressbar
@@ -68,7 +66,6 @@ jobs:
         chown -R root:root test ${PSPDEV}
         psp-pacman -R --noconfirm psp-makepkg-test
         psp-pacman -Scc --noconfirm
-        sed -i '/^OPTIONS=/s/!strip/strip/' ${PSPDEV}/etc/makepkg.conf
 
 
   build-VM:
@@ -114,8 +111,6 @@ jobs:
         export PSPDEV="$PWD/pspdev"
         export PATH="${PATH}:${PSPDEV}/bin"
         export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-        # Prevent stripping, since PSPDEV is not actually installed
-        sed -i '/^OPTIONS=/s/strip/!strip/' ${PSPDEV}/etc/makepkg.conf
         cd test
         psp-makepkg -i --noconfirm --noprogressbar
         cd -
@@ -123,7 +118,6 @@ jobs:
         # Undo changes
         psp-pacman -R --noconfirm psp-makepkg-test
         psp-pacman -Scc --noconfirm
-        sed -i '/^OPTIONS=/s/!strip/strip/' ${PSPDEV}/etc/makepkg.conf
 
   dispatch:
     if: contains(github.ref,'refs/heads/master')
