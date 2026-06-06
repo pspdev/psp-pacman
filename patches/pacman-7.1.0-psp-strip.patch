@@ -1,0 +1,38 @@
+diff --git a/scripts/libmakepkg/tidy/50-strip.sh.in b/scripts/libmakepkg/tidy/50-strip.sh.in
+index 926f0ebf..22bf0b2d 100644
+--- a/scripts/libmakepkg/tidy/50-strip.sh.in
++++ b/scripts/libmakepkg/tidy/50-strip.sh.in
+@@ -126,8 +126,14 @@ collect_debug_symbols() {
+ safe_strip_file(){
+ 	local binary=$1; shift
+ 	local tempfile=$(mktemp "$binary.XXXXXX")
+-	if strip "$@" "$binary" -o "$tempfile"; then
+-		cat "$tempfile" > "$binary"
++	if file "$binary"|grep 'MIPS' > /dev/null; then
++		if psp-strip "$@" "$binary" -o "$tempfile"; then
++			cat "$tempfile" > "$binary"
++		fi
++	else
++		if strip "$@" "$binary" -o "$tempfile"; then
++			cat "$tempfile" > "$binary"
++		fi
+ 	fi
+ 	rm -f "$tempfile"
+ }
+@@ -136,8 +142,14 @@ safe_strip_lto() {
+ 	local binary=$1;
+ 
+ 	local tempfile=$(mktemp "$binary.XXXXXX")
+-	if strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
+-		cat "$tempfile" > "$binary"
++	if file "$binary"|grep 'MIPS' > /dev/null; then
++		if psp-strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
++			cat "$tempfile" > "$binary"
++		fi
++	else
++		if strip -R .gnu.lto_* -R .gnu.debuglto_* -N __gnu_lto_v1 "$binary" -o "$tempfile"; then
++			cat "$tempfile" > "$binary"
++		fi
+ 	fi
+ 	rm -f "$tempfile"
+ }

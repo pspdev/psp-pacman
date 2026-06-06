@@ -27,7 +27,7 @@ download_and_extract https://gitlab.archlinux.org/pacman/pacman/-/archive/v${PAC
 
 ## Apply patch
 apply_patch pacman-${PACMAN_VERSION}-rootless
-apply_patch pacman-${PACMAN_VERSION}-add-strip-command-option
+apply_patch pacman-${PACMAN_VERSION}-psp-strip
 
 ## Fix some lines in the scripts which have hardcoded paths
 find ./ -type f -name "*.in" -exec sed -i -e "s#LIBRARY=\${LIBRARY:-'@libmakepkgdir@'}#LIBRARY=\${LIBRARY:-\"\${PSPDEV}/share/makepkg\"}#g" {} \;
