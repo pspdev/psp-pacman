@@ -20,19 +20,19 @@ jobs:
       if: startsWith(matrix.os, 'debian')
       run: |
         apt-get update
-        apt-get install -y wget adduser build-essential python3 python3-venv pkgconf libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev git sudo
+        apt-get install -y wget adduser build-essential meson ninja-build pkgconf libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev git sudo
         adduser --system --group build
 
     - name: Install Alpine build dependencies
       if: startsWith(matrix.os, 'alpine')
       run: |
-        apk add wget wget build-base bash python3 py3-pip pkgconfig libarchive-tools libarchive-dev openssl-dev gpgme-dev curl-dev git sudo fakeroot
+        apk add wget wget build-base bash meson ninja-build pkgconfig libarchive-tools libarchive-dev openssl-dev gpgme-dev curl-dev git sudo fakeroot
         adduser -D -s /bin/bash build
 
     - name: Install Fedora build dependencies
       if: startsWith(matrix.os, 'fedora')
       run: |
-        dnf -y install gcc python3 python3-pip wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot
+        dnf -y install gcc meson ninja-build wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot
         useradd build
 
     - uses: actions/checkout@v6
@@ -85,12 +85,12 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt-get -y install libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev sudo
+        sudo apt-get -y install meson libcurl4-openssl-dev libarchive-tools libarchive-dev libgpgme-dev
 
     - name: Install Mac build dependencies
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install bash gnu-sed libarchive gpgme fakeroot
+        brew install bash meson gnu-sed libarchive gpgme fakeroot
 
     - name: Compile Tools
       run: |

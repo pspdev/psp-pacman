@@ -36,9 +36,6 @@ find ./ -type f -name "*.in" -exec sed -i -e "s#export TEXTDOMAINDIR='@localedir
 find ./ -type f -name "*.in" -exec sed -i -e "s#'@libmakepkgdir@'#\${PSPDEV}/share/makepkg#g" {} \;
 find ./ -type f -name "*.in" -exec sed -i -e "s#@libmakepkgdir@#\${PSPDEV}/share/makepkg#g" {} \;
 
-## Install meson and ninja in the current directory
-setup_build_system
-
 ## Build pacman
 meson build -Dprefix="${PSPDEV}" --buildtype=release \
   -Ddefault_library=static  -Dbuildscript=PSPBUILD \
