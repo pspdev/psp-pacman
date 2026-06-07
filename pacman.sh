@@ -24,7 +24,7 @@ fi
 cd "$(dirname "$0")"
 
 ## Install makepkg from source if it isn't already available
-if which makepkg > /dev/null; then
+if ! which makepkg > /dev/null; then
     wget https://gitlab.archlinux.org/pacman/pacman/-/archive/v7.1.0/pacman-v7.1.0.tar.gz
     tar -xvf pacman-v7.1.0.tar.gz
     cd pacman-v7.1.0
