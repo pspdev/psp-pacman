@@ -15,11 +15,6 @@ if [ -z "${PSPDEV}" ]; then
     exit 1
 fi
 
-if [ ! -d "${PSPDEV}" ]; then
-    echo "${PSPDEV} does not exist"
-    exit 2
-fi
-
 ## Enter the script directory.
 cd "$(dirname "$0")"
 
