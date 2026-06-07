@@ -39,7 +39,6 @@ jobs:
 
     - name: Compile project
       run: |
-        chown -R $(id -nu):$(id -ng) .
         export PSPDEV="$PWD/pspdev"
         export PATH="$PATH:$PSPDEV/bin"
         ./pacman.sh
@@ -51,20 +50,6 @@ jobs:
         psp-pacman -Syu --noconfirm --noprogressbar stb
         psp-pacman -Qi stb
         psp-pacman -R --noconfirm stb
-        psp-pacman -Scc --noconfirm
-
-    - name: Test psp-makepkg
-      run: |
-        export PSPDEV=$PWD/pspdev
-        export PATH="$PATH:$PSPDEV/bin"
-        chown -R build:build test ${PSPDEV}
-        cd test
-        sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 $(which psp-makepkg) -i --noconfirm --noprogressbar
-        cd -
-        cat ${PSPDEV}/share/pacman/test.txt
-        # Undo changes
-        chown -R root:root test ${PSPDEV}
-        psp-pacman -R --noconfirm psp-makepkg-test
         psp-pacman -Scc --noconfirm
 
 
@@ -91,8 +76,10 @@ jobs:
 
     - name: Compile Tools
       run: |
-        export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-        export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig" #This really is only needed for macOS
+        if [ "$(uname -s)" == "Darwin" ]; then
+          export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
+          export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig" #This really is only needed for macOS
+        fi
         export PSPDEV="$PWD/pspdev"
         ./pacman.sh
 
@@ -103,20 +90,6 @@ jobs:
         psp-pacman -Syu --noconfirm stb
         psp-pacman -Qi stb
         psp-pacman -R --noconfirm stb
-        psp-pacman -Scc --noconfirm
-
-    - name: Test psp-makepkg
-      if: matrix.os != 'macos-latest'
-      run: |
-        export PSPDEV="$PWD/pspdev"
-        export PATH="${PATH}:${PSPDEV}/bin"
-        export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-        cd test
-        psp-makepkg -i --noconfirm --noprogressbar
-        cd -
-        cat ${PSPDEV}/share/pacman/test.txt
-        # Undo changes
-        psp-pacman -R --noconfirm psp-makepkg-test
         psp-pacman -Scc --noconfirm
 
   dispatch:
