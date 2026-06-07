@@ -6,3 +6,5 @@ psp-pacman-*-*.pkg.tar.gz
 src/
 pkg/
 pspdev/
+pacman-v*/
+pacman-v*.tar.gz*
