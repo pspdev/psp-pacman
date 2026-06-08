@@ -32,7 +32,7 @@ fi
 
 ## Build the package
 ls -l
-CARCH="$(./get-arch)" makepkg -p PSPBUILD --nofakeroot .
+CARCH="$(./get-arch)" makepkg -p PSPBUILD .
 
 ## Create the required directories for installation
 mkdir -m 755 -p "${PSPDEV}/var/lib/pacman"
