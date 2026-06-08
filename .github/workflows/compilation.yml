@@ -20,7 +20,7 @@ jobs:
       if: startsWith(matrix.os, 'debian')
       run: |
         apt-get update
-        apt-get install -y wget adduser build-essential meson ninja-build makepkg pkgconf libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev git sudo
+        apt-get install -y wget adduser build-essential meson ninja-build makepkg pkgconf curl libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev git sudo
         adduser --system --group build
 
     - name: Install Alpine build dependencies
@@ -32,7 +32,7 @@ jobs:
     - name: Install Fedora build dependencies
       if: startsWith(matrix.os, 'fedora')
       run: |
-        dnf -y install gcc meson ninja-build makepkg wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot
+        dnf -y install gcc meson ninja-build makepkg wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot curl
         useradd build
 
     - uses: actions/checkout@v6
