@@ -3,7 +3,6 @@
 
 # Exit on errors
 set -e
-set -u
 
 ## Remove $CC and $CXX for configure
 unset CC
@@ -39,7 +38,8 @@ mkdir -m 755 -p "${PSPDEV}/var/lib/pacman"
 
 ## Add the directory with pacman's binaries to the start of the PATH
 export PATH="${PWD}/pkg/psp-pacman/share/pacman/bin:${PATH}"
-export LD_LIBRARY_PATH="${PWD}/pkg/psp-pacman/lib"
+
+export LD_LIBRARY_PATH="${PWD}/pkg/psp-pacman/lib:${LD_LIBRARY_PATH}"
 
 ## The package in $PSPDEV using the pacman that was build
 ./pkg/psp-pacman/share/pacman/bin/pacman  \
