@@ -41,10 +41,6 @@ jobs:
       run: |
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
-        if [ "$(uname -s)" == "Darwin" ]; then
-          export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-          export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig" #This really is only needed for macOS
-        fi
         chown -R build:build .
         sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
@@ -85,8 +81,8 @@ jobs:
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
         if [ "$(uname -s)" == "Darwin" ]; then
-          export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-          export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig" #This really is only needed for macOS
+          export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$(brew --prefix bash)/bin:$PATH"
+          export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig"
         fi
         ./pacman.sh
         psp-pacman -V
