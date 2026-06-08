@@ -48,7 +48,6 @@ jobs:
         chown -R build:build .
         sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
-        psp-pacman -Scc --noconfirm
 
     - name: Test psp-pacman
       run: |
@@ -91,7 +90,6 @@ jobs:
         fi
         ./pacman.sh
         psp-pacman -V
-        psp-pacman -Scc --noconfirm
 
     - name: Test psp-pacman
       run: |
