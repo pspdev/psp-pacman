@@ -46,4 +46,5 @@ export LD_LIBRARY_PATH="${PWD}/pkg/psp-pacman/lib"
   --dbpath "${PSPDEV}/var/lib/pacman" \
   --config "pacman.conf" \
   --arch "$(./get-arch)" \
+  --noconfirm \
   -U psp-pacman-*-$(./get-arch).pkg.tar.gz

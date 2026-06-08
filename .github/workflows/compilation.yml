@@ -26,7 +26,7 @@ jobs:
     - name: Install Alpine build dependencies
       if: startsWith(matrix.os, 'alpine')
       run: |
-        apk add wget wget build-base bash meson ninja-build pacman pkgconfig libarchive-tools libarchive-dev openssl-dev gpgme-dev curl-dev git sudo fakeroot
+        apk add wget wget build-base bash meson ninja-build pacman pkgconfig libarchive-tools libarchive-dev openssl-dev gpgme-dev curl-dev git sudo fakeroot curl
         adduser -D -s /bin/bash build
 
     - name: Install Fedora build dependencies
