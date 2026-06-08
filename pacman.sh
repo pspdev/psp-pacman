@@ -17,6 +17,8 @@ fi
 ## Enter the script directory.
 cd "$(dirname "$0")"
 
+rm -rf psp-pacman-*-*.pkg.tar.gz
+
 ## Install makepkg from source if it isn't already available
 if ! which makepkg > /dev/null; then
     echo "Did not find makepkg, downloading and building pacman from source"
@@ -31,7 +33,6 @@ if ! which makepkg > /dev/null; then
 fi
 
 ## Build the package
-ls -l
 CARCH="$(./get-arch)" makepkg -p PSPBUILD .
 
 ## Create the required directories for installation
@@ -49,4 +50,4 @@ export LD_LIBRARY_PATH="${PWD}/pkg/psp-pacman/lib:${LD_LIBRARY_PATH}"
   --config "pacman.conf" \
   --arch "$(./get-arch)" \
   --noconfirm \
-  -U psp-pacman-*-$(./get-arch).pkg.tar.gz
+  -U psp-pacman-*-*.pkg.tar.gz
