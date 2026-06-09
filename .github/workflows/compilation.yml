@@ -74,13 +74,12 @@ jobs:
     - name: Install Mac build dependencies
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install bash meson gnu-sed libarchive gpgme
+        brew install bash meson gnu-sed libarchive gpgme fakeroot
 
     - name: Compile psp-pacman
       run: |
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
-        export LIBMAKEPKG_EXECUTABLE_FAKEROOT_SH=1  # Fakeroot is not needed
         sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
 
