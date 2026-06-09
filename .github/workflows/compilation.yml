@@ -80,6 +80,7 @@ jobs:
       run: |
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
+        export LIBMAKEPKG_EXECUTABLE_FAKEROOT_SH=1  # Fakeroot is not needed
         sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
 
