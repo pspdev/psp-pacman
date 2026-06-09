@@ -9,7 +9,7 @@ arch=(
   "debian_x86_64"
   "fedora_x86_64"
   "macos_x86_64"
-  "macos_aarm64"
+  "macos_arm64"
 )
 url="https://github.com/pspdev/psp-pacman"
 license=('GPL-2.0-only')
