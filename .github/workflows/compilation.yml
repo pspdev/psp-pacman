@@ -69,12 +69,12 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt-get -y install meson makepkg libcurl4-openssl-dev libarchive-tools libarchive-dev libgpgme-dev
+        sudo apt-get -y install meson libcurl4-openssl-dev libarchive-tools libarchive-dev libgpgme-dev
 
     - name: Install Mac build dependencies
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install bash meson makepkg gnu-sed libarchive gpgme fakeroot
+        brew install bash meson gnu-sed libarchive gpgme
 
     - name: Compile psp-pacman
       run: |
