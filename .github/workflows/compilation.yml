@@ -80,10 +80,6 @@ jobs:
       run: |
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
-        if [ "$(uname -s)" == "Darwin" ]; then
-          export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$(brew --prefix bash)/bin:$PATH"
-          export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig"
-        fi
         sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
 
