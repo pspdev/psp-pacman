@@ -5,11 +5,11 @@ pkgdesc="The package manager for the PSPDEV SDK."
 arch=(
   "alpine_x86_64"
   "ubuntu_x86_64"
-  "ubuntu_arm64"
+  "ubuntu_aarm64"
   "debian_x86_64"
   "fedora_x86_64"
   "macos_x86_64"
-  "macos_arm64"
+  "macos_aarm64"
 )
 url="https://github.com/pspdev/psp-pacman"
 license=('GPL-2.0-only')
