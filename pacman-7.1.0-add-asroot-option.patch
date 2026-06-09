@@ -1,0 +1,117 @@
+diff --git a/scripts/makepkg.sh.in b/scripts/makepkg.sh.in
+index da69df8b..d7e7aba5 100644
+--- a/scripts/makepkg.sh.in
++++ b/scripts/makepkg.sh.in
+@@ -79,6 +79,7 @@ SIGNPKG=''
+ SPLITPKG=0
+ SOURCEONLY=0
+ VERIFYSOURCE=0
++ASROOT=0
+ 
+ MAKEPKG_LINT_PKGBUILD=${MAKEPKG_LINT_PKGBUILD:-1}
+ 
+@@ -879,6 +880,27 @@ run_split_packaging() {
+ 	pkgname=("${pkgname_backup[@]}")
+ }
+ 
++build_package() {
++	if (( SOURCEONLY )); then
++		create_srcpackage
++		if (( INFAKEROOT )); then
++			msg "$(gettext "Leaving %s environment.")" "fakeroot"
++		fi
++		exit $E_OK
++	fi
++
++	prepare_buildenv
++
++	chmod 755 "$pkgdirbase"
++	if (( ! SPLITPKG )); then
++		run_single_packaging
++	else
++		run_split_packaging
++	fi
++
++	create_debug_package
++}
++
+ usage() {
+ 	printf "makepkg (pacman) %s\n" "$makepkg_version"
+ 	echo
+@@ -967,7 +989,7 @@ OPT_LONG=('allsource' 'check' 'clean' 'cleanbuild' 'config:' 'dir:' 'force' 'gen
+           'skippgpcheck' 'source' 'syncdeps' 'verifysource' 'version')
+ 
+ # Pacman Options
+-OPT_LONG+=('asdeps' 'noconfirm' 'needed' 'noprogressbar')
++OPT_LONG+=('asdeps' 'noconfirm' 'needed' 'noprogressbar' 'asroot')
+ 
+ if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
+ 	exit $E_INVALID_OPTION
+@@ -980,6 +1002,7 @@ while true; do
+ 		# Pacman Options
+ 		--asdeps)         ASDEPS=1;;
+ 		--needed)         NEEDED=1;;
++		--asroot)         ASROOT=1;;
+ 		--noconfirm)      PACMAN_OPTS+=("--noconfirm") ;;
+ 		--noprogressbar)  PACMAN_OPTS+=("--noprogressbar") ;;
+ 
+@@ -1117,7 +1140,7 @@ if (( LOGGING )) && ! ensure_writable_dir "LOGDEST" "$LOGDEST"; then
+ fi
+ 
+ if (( ! INFAKEROOT )); then
+-	if (( EUID == 0 )); then
++	if (( EUID == 0 && ! ASROOT )); then
+ 		error "$(gettext "Running %s as root is not allowed as it can cause permanent,\n\
+ catastrophic damage to your system.")" "makepkg"
+ 		exit $E_ROOT
+@@ -1243,23 +1266,7 @@ fi
+ 
+ # Run the bare minimum in fakeroot
+ if (( INFAKEROOT )); then
+-	if (( SOURCEONLY )); then
+-		create_srcpackage
+-		msg "$(gettext "Leaving %s environment.")" "fakeroot"
+-		exit $E_OK
+-	fi
+-
+-	prepare_buildenv
+-
+-	chmod 755 "$pkgdirbase"
+-	if (( ! SPLITPKG )); then
+-		run_single_packaging
+-	else
+-		run_split_packaging
+-	fi
+-
+-	create_debug_package
+-
++	build_package
+ 	msg "$(gettext "Leaving %s environment.")" "fakeroot"
+ 	exit $E_OK
+ fi
+@@ -1303,7 +1310,11 @@ if (( SOURCEONLY )); then
+ 	check_source_integrity all
+ 	cd_safe "$startdir"
+ 
+-	enter_fakeroot
++	if (( EUID == 0 )); then
++		build_package
++	else
++		enter_fakeroot
++	fi
+ 
+ 	if [[ $SIGNPKG = 'y' ]]; then
+ 		msg "$(gettext "Signing package...")"
+@@ -1409,7 +1420,11 @@ else
+ 		cd_safe "$startdir"
+ 	fi
+ 
+-	enter_fakeroot
++	if (( EUID == 0 )); then
++		build_package
++	else
++		enter_fakeroot
++	fi
+ 
+ 	create_package_signatures || exit $E_PRETTY_BAD_PRIVACY
+ fi

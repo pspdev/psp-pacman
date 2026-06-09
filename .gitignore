@@ -8,3 +8,4 @@ pkg/
 pspdev/
 pacman-v*/
 pacman-v*.tar.gz*
+temp_build/

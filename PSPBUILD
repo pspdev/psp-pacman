@@ -24,12 +24,14 @@ source=(
   "pacman.conf"
   "pacman-${pkgver}-psp-strip.patch"
   "pacman-${pkgver}-rootless.patch"
+  "pacman-${pkgver}-add-asroot-option.patch"
   "get-arch"
   "psp-makepkg"
   "psp-pacman"
 )
 sha256sums=(
   "1090f680958a73dc1f443a1eb919bd2ad77b3caff38e92e9737dec100c647bc9"
+  "SKIP"
   "SKIP"
   "SKIP"
   "SKIP"
@@ -45,6 +47,7 @@ prepare() {
   # Apply patches
   patch -p1 < "../pacman-${pkgver}-psp-strip.patch"
   patch -p1 < "../pacman-${pkgver}-rootless.patch"
+  patch -p1 < "../pacman-${pkgver}-add-asroot-option.patch"
 
   ## Fix some lines in the scripts which have hardcoded paths
   find ./ -type f -name "*.in" -exec sed -i -e "s#LIBRARY=\${LIBRARY:-'@libmakepkgdir@'}#LIBRARY=\${LIBRARY:-\"\${PSPDEV}/share/makepkg\"}#g" {} \;
@@ -71,21 +74,23 @@ package() {
 
   cd ..
 
-  install -d "${pkgdir}/etc/"
+  set -x
+
+  mkdir  -m 755 -p "${pkgdir}/etc/"
   install -m 644 ../pacman.conf "${pkgdir}/etc/pacman.conf"
   install -m 644 ../makepkg.conf "${pkgdir}/etc/makepkg.conf"
 
-  install -d "${pkgdir}/bin/"
+  mkdir  -m 755 -p "${pkgdir}/bin/"
   install -m 755 ../psp-pacman "${pkgdir}/bin/psp-pacman"
   install -m 755 ../psp-makepkg "${pkgdir}/bin/psp-makepkg"
   install -m 755 ../get-arch "${pkgdir}/share/pacman/bin/get-arch"
 
-  install -d -m 755 -p "$pkgdir/share/licenses/$pkgname"
+  mkdir -m 755 -p "$pkgdir/share/licenses/$pkgname"
   install -m 644 COPYING "$pkgdir/share/licenses/$pkgname"
 
   # Add empty directories which psp-pacman will use
-  install -d -m 755 "${pkgdir}/etc/pacman.d/gnupg/"
-  install -d -m 755 "${pkgdir}/var/log/"
-  install -d -m 755 "${pkgdir}/etc/pacman.d/hooks"
-  install -d -m 755 -p "${pkgdir}/var/lib/pacman"
+  mkdir -m 755 -p "${pkgdir}/etc/pacman.d/gnupg/"
+  mkdir -m 755 -p "${pkgdir}/var/log/"
+  mkdir -m 755 -p "${pkgdir}/etc/pacman.d/hooks"
+  mkdir -m 755 -p "${pkgdir}/var/lib/pacman"
 }

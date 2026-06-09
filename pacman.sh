@@ -16,24 +16,40 @@ fi
 
 ## Enter the script directory.
 cd "$(dirname "$0")"
+WORKDIR="${PWD}"
 
-rm -rf psp-pacman-*-*.pkg.tar.gz
+if [ "$(uname -s)" == "Darwin" ]; then
+    export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$(brew --prefix bash)/bin:$PATH"
+    export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig"
+fi
+
+rm -rf temp_build pkg src psp-pacman-*-*.pkg.tar.gz
 
 ## Install makepkg from source if it isn't already available
 if ! which makepkg > /dev/null; then
     echo "Did not find makepkg, downloading and building pacman from source"
-    wget https://gitlab.archlinux.org/pacman/pacman/-/archive/v7.1.0/pacman-v7.1.0.tar.gz
-    tar -xvf pacman-v7.1.0.tar.gz
-    cd pacman-v7.1.0
-    meson build --buildtype=release -Ddoc=disabled -Di18n=false
-    cd build
-    ninja
-    export PATH="${PWD}:${PATH}"
-    cd ../..
+    source PSPBUILD
+    set -x
+    export pkgdir="${PWD}/temp_build/psp-pacman"
+    mkdir -p "${pkgdir}"
+    rm -rf pacman-v${pkgver}
+    wget -nc ${source[0]}
+    tar -xvf pacman-v${pkgver}.tar.gz
+    prepare
+    cd "$WORKDIR"
+    build
+    cd "$WORKDIR"
+    package
+    export PATH="${pkgdir}/share/pacman/bin:${PATH}"
+    cd "$WORKDIR"
+    if (( EUID == 0 )); then
+        CARCH="$(./get-arch)" PSPDEV="${pkgdir}" makepkg -p PSPBUILD --asroot .
+    else
+        CARCH="$(./get-arch)" PSPDEV="${pkgdir}" makepkg -p PSPBUILD .
+    fi
+else
+    CARCH="$(./get-arch)" makepkg -p PSPBUILD .
 fi
-
-## Build the package
-CARCH="$(./get-arch)" makepkg -p PSPBUILD .
 
 ## Create the required directories for installation
 mkdir -m 755 -p "${PSPDEV}/var/lib/pacman"
@@ -45,9 +61,9 @@ export LD_LIBRARY_PATH="${PWD}/pkg/psp-pacman/lib:${LD_LIBRARY_PATH}"
 
 ## The package in $PSPDEV using the pacman that was build
 ./pkg/psp-pacman/share/pacman/bin/pacman  \
-  --root "${PSPDEV}" \
-  --dbpath "${PSPDEV}/var/lib/pacman" \
-  --config "pacman.conf" \
-  --arch "$(./get-arch)" \
-  --noconfirm \
-  -U psp-pacman-*-*.pkg.tar.gz
+    --root "${PSPDEV}" \
+    --dbpath "${PSPDEV}/var/lib/pacman" \
+    --config "pacman.conf" \
+    --arch "$(./get-arch)" \
+    --noconfirm \
+    -U psp-pacman-*-*.pkg.tar.gz
