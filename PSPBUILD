@@ -5,7 +5,7 @@ pkgdesc="The package manager for the PSPDEV SDK."
 arch=(
   "alpine_x86_64"
   "ubuntu_x86_64"
-  "ubuntu_aarm64"
+  "ubuntu_aarch64"
   "debian_x86_64"
   "fedora_x86_64"
   "macos_x86_64"
