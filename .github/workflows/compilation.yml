@@ -84,7 +84,7 @@ jobs:
           export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$(brew --prefix bash)/bin:$PATH"
           export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig"
         fi
-        ./pacman.sh
+        sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
 
     - name: Test psp-pacman
