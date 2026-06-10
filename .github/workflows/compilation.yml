@@ -133,10 +133,10 @@ jobs:
       run: |
         apk add --no-cache bash coreutils
         cd repo
-        ${PSPDEV}/share/pacman/bin/repo-add pspdev.db.tar.gz *.pkg.tar.gz
-        mv pspdev.db.tar.gz pspdev.db
-        mv pspdev.files.tar.gz pspdev.files
-        tar -cvf ../repo.tar pspdev.db pspdev.files *.pkg.tar.gz pspdev-*.tar.gz
+        ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
+        mv psp-pacman.db.tar.gz psp-pacman.db
+        mv psp-pacman.files.tar.gz psp-pacman.files
+        tar -cvf ../repo.tar psp-pacman.db psp-pacman.files *.pkg.tar.gz pspdev-*.tar.gz
     - name: Upload repo artifact
       uses: actions/upload-artifact@v7
       with:
