@@ -134,6 +134,7 @@ jobs:
     - name: Create repo files
       run: |
         ls -l
+        cp artifact-*/* ./
         apk add --no-cache bash coreutils
         ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
         mv psp-pacman.db.tar.gz psp-pacman.db
