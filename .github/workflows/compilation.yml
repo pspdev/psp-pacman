@@ -139,7 +139,7 @@ jobs:
         ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
         mv psp-pacman.db.tar.gz psp-pacman.db
         mv psp-pacman.files.tar.gz psp-pacman.files
-        tar -cvf ../repo.tar psp-pacman.db psp-pacman.files *.pkg.tar.gz pspdev-*.tar.gz
+        tar -cvf repo.tar psp-pacman.db psp-pacman.files *.pkg.tar.gz pspdev-*.tar.gz
     - name: Upload repo artifact
       uses: actions/upload-artifact@v7
       with:
