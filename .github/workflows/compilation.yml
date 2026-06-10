@@ -134,7 +134,6 @@ jobs:
     - name: Create repo files
       run: |
         apk add --no-cache bash coreutils
-        cd repo
         ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
         mv psp-pacman.db.tar.gz psp-pacman.db
         mv psp-pacman.files.tar.gz psp-pacman.files
