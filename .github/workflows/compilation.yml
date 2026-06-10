@@ -53,6 +53,7 @@ jobs:
     - name: Create archive
       run: |
         tar -czvf pspdev-$(./get-arch).tar.gz pspdev
+        ls -l
 
     - uses: actions/upload-artifact@v7
       with:
