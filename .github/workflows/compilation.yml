@@ -6,6 +6,11 @@ on:
   repository_dispatch:
     types: [run_build]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -45,6 +50,17 @@ jobs:
         sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
 
+    - name: Create archive
+      run: |
+        tar -czvf pspdev-$(./get-arch).tar.gz pspdev
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: artifact-${{ matrix.os }}
+        path: |
+          psp-pacman-*.pkg.tar.gz
+          pspdev-*.tar.gz
+
     - name: Test psp-pacman
       run: |
         export PSPDEV="$PWD/pspdev"
@@ -83,6 +99,17 @@ jobs:
         sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
         psp-pacman -V
 
+    - name: Create archive
+      run: |
+        tar -czvf pspdev-$(./get-arch).tar.gz pspdev
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: artifact-${{ matrix.os }}
+        path: |
+          psp-pacman-*.pkg.tar.gz
+          pspdev-*.tar.gz
+
     - name: Test psp-pacman
       run: |
         export PSPDEV=$PWD/pspdev
@@ -92,9 +119,43 @@ jobs:
         psp-pacman -R --noconfirm stb
         psp-pacman -Scc --noconfirm
 
-  dispatch:
+
+  package-repo:
     if: contains(github.ref,'refs/heads/master')
     needs: [build, build-VM]
+    runs-on: ubuntu-latest
+    container: ghcr.io/pspdev/pspsdk:latest
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
+    - name: Create repo files
+      run: |
+        apk add --no-cache bash coreutils
+        cd repo
+        ${PSPDEV}/share/pacman/bin/repo-add pspdev.db.tar.gz *.pkg.tar.gz
+        mv pspdev.db.tar.gz pspdev.db
+        mv pspdev.files.tar.gz pspdev.files
+        tar -cvf ../repo.tar pspdev.db pspdev.files *.pkg.tar.gz pspdev-*.tar.gz
+    - name: Upload repo artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: github-pages
+        path: repo.tar
+
+
+  publish-repo:
+    if: contains(github.ref,'refs/heads/master')
+    needs: [package-repo]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+
+  dispatch:
+    if: contains(github.ref,'refs/heads/master')
+    needs: [publish-repo]
     runs-on: ubuntu-latest
   
     steps:
