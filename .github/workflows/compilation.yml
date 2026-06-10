@@ -52,12 +52,13 @@ jobs:
 
     - name: Create archive
       run: |
-        tar -czvf pspdev-$(./get-arch).tar.gz pspdev
+        echo "ARCH=$(./get-arch)" >> $GITHUB_ENV
+        tar -czvf pspdev-${{ env.ARCH }}.tar.gz pspdev
         ls -l
 
     - uses: actions/upload-artifact@v7
       with:
-        name: artifact-${{ matrix.os }}
+        name: artifact-${{ env.ARCH }}
         path: |
           psp-pacman-*.pkg.tar.gz
           pspdev-*.tar.gz
