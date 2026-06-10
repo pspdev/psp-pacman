@@ -18,18 +18,19 @@ fi
 cd "$(dirname "$0")"
 WORKDIR="${PWD}"
 
+## MacOS specific environment variables
 if [ "$(uname -s)" == "Darwin" ]; then
     export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$(brew --prefix bash)/bin:$PATH"
     export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig"
 fi
 
+## Clean up from previous builds
 rm -rf temp_build pkg src psp-pacman-*-*.pkg.tar.gz
 
-## Install makepkg from source if it isn't already available
+## Install makepkg from source if it isn't already available and build the package
 if ! which makepkg > /dev/null; then
     echo "Did not find makepkg, downloading and building pacman from source"
     source PSPBUILD
-    set -x
     export pkgdir="${PWD}/temp_build/psp-pacman"
     mkdir -p "${pkgdir}"
     rm -rf pacman-v${pkgver}
@@ -40,8 +41,8 @@ if ! which makepkg > /dev/null; then
     build
     cd "$WORKDIR"
     package
-    export PATH="${pkgdir}/share/pacman/bin:${PATH}"
     cd "$WORKDIR"
+    export PATH="${pkgdir}/share/pacman/bin:${PATH}"
     if (( EUID == 0 )); then
         CARCH="$(./get-arch)" PSPDEV="${pkgdir}" makepkg -p PSPBUILD --asroot .
     else
