@@ -47,7 +47,7 @@ jobs:
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
         chown -R build:build .
-        sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
+        sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" ./build-and-install.sh
         psp-pacman -V
 
     - name: Create archive
@@ -98,7 +98,7 @@ jobs:
       run: |
         export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
-        sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./pacman.sh
+        sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./build-and-install.sh
         psp-pacman -V
 
     - name: Create archive
