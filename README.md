@@ -10,16 +10,14 @@ This package provides the following commands:
 
 On Ubuntu/Debian, the following packages need to be installed:
 - build-essential
-- gettext (optional to add support for other languages than english)
 - libarchive-dev
 - libarchive-tools
 - libcurl4-openssl-dev
 - libgpgme-dev
 - libssl-dev
-- m4
 - pkg-config
-- python3
-- python3-venv
+- meson
+- ninja-build
 - wget
 
 On Arch/Manjaro, the following packages need to be installed:

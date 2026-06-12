@@ -1,3 +1,11 @@
 *.swp
 *~
 build/
+pacman-v*.tar.gz
+psp-pacman-*-*.pkg.tar.gz
+src/
+pkg/
+pspdev/
+pacman-v*/
+pacman-v*.tar.gz*
+temp_build/

@@ -6,6 +6,11 @@ on:
   repository_dispatch:
     types: [run_build]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,29 +25,43 @@ jobs:
       if: startsWith(matrix.os, 'debian')
       run: |
         apt-get update
-        apt-get install -y wget adduser build-essential meson ninja-build pkgconf libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev git sudo
+        apt-get install -y wget adduser build-essential meson ninja-build makepkg pkgconf curl libcurl4 libcurl4-openssl-dev libssl-dev libarchive-tools libarchive-dev libgpgme-dev git sudo
         adduser --system --group build
 
     - name: Install Alpine build dependencies
       if: startsWith(matrix.os, 'alpine')
       run: |
-        apk add wget wget build-base bash meson ninja-build pkgconfig libarchive-tools libarchive-dev openssl-dev gpgme-dev curl-dev git sudo fakeroot
+        apk add wget wget build-base bash meson ninja-build pacman pkgconfig libarchive-tools libarchive-dev openssl-dev gpgme-dev curl-dev git sudo fakeroot curl
         adduser -D -s /bin/bash build
 
     - name: Install Fedora build dependencies
       if: startsWith(matrix.os, 'fedora')
       run: |
-        dnf -y install gcc meson ninja-build wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot
+        dnf -y install gcc meson ninja-build makepkg wget bsdtar libarchive-devel openssl-devel gpgme-devel libcurl-devel pkgconf git patch sudo which fakeroot curl
         useradd build
 
     - uses: actions/checkout@v6
 
-    - name: Compile project
+    - name: Compile psp-pacman
       run: |
-        chown -R $(id -nu):$(id -ng) .
-        export PSPDEV="$PWD/pspdev"
+        export PSPDEV=$PWD/pspdev
         export PATH="$PATH:$PSPDEV/bin"
-        ./pacman.sh
+        chown -R build:build .
+        sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" ./build-and-install.sh
+        psp-pacman -V
+
+    - name: Create archive
+      run: |
+        echo "ARCH=$(./get-arch)" >> $GITHUB_ENV
+        tar -czvf pspdev-${{ env.ARCH }}.tar.gz pspdev
+        ls -l
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: artifact-${{ env.ARCH }}
+        path: |
+          psp-pacman-*.pkg.tar.gz
+          pspdev-*.tar.gz
 
     - name: Test psp-pacman
       run: |
@@ -51,20 +70,6 @@ jobs:
         psp-pacman -Syu --noconfirm --noprogressbar stb
         psp-pacman -Qi stb
         psp-pacman -R --noconfirm stb
-        psp-pacman -Scc --noconfirm
-
-    - name: Test psp-makepkg
-      run: |
-        export PSPDEV=$PWD/pspdev
-        export PATH="$PATH:$PSPDEV/bin"
-        chown -R build:build test ${PSPDEV}
-        cd test
-        sudo -u build PATH="${PATH}" PSPDEV="${PSPDEV}" LIBMAKEPKG_LINT_PACKAGE_DOTFILES_SH=0 $(which psp-makepkg) -i --noconfirm --noprogressbar
-        cd -
-        cat ${PSPDEV}/share/pacman/test.txt
-        # Undo changes
-        chown -R root:root test ${PSPDEV}
-        psp-pacman -R --noconfirm psp-makepkg-test
         psp-pacman -Scc --noconfirm
 
 
@@ -87,14 +92,25 @@ jobs:
     - name: Install Mac build dependencies
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install bash meson gnu-sed libarchive gpgme fakeroot
+        brew install bash meson gnu-sed libarchive gpgme
 
-    - name: Compile Tools
+    - name: Compile psp-pacman
       run: |
-        export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-        export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig" #This really is only needed for macOS
-        export PSPDEV="$PWD/pspdev"
-        ./pacman.sh
+        export PSPDEV=$PWD/pspdev
+        export PATH="$PATH:$PSPDEV/bin"
+        sudo PATH="${PATH}" PSPDEV="${PSPDEV}" ./build-and-install.sh
+        psp-pacman -V
+
+    - name: Create archive
+      run: |
+        tar -czvf pspdev-$(./get-arch).tar.gz pspdev
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: artifact-${{ matrix.os }}
+        path: |
+          psp-pacman-*.pkg.tar.gz
+          pspdev-*.tar.gz
 
     - name: Test psp-pacman
       run: |
@@ -105,23 +121,51 @@ jobs:
         psp-pacman -R --noconfirm stb
         psp-pacman -Scc --noconfirm
 
-    - name: Test psp-makepkg
-      if: matrix.os != 'macos-latest'
+
+  package-repo:
+    if: contains(github.ref,'refs/heads/master')
+    needs: [build, build-VM]
+    runs-on: ubuntu-latest
+    container: ghcr.io/pspdev/pspsdk:latest
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
+    - name: Create repo files
       run: |
-        export PSPDEV="$PWD/pspdev"
-        export PATH="${PATH}:${PSPDEV}/bin"
-        export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" # This really is only needed for macOS
-        cd test
-        psp-makepkg -i --noconfirm --noprogressbar
-        cd -
-        cat ${PSPDEV}/share/pacman/test.txt
-        # Undo changes
-        psp-pacman -R --noconfirm psp-makepkg-test
-        psp-pacman -Scc --noconfirm
+        ls -l
+        cp artifact-*/* ./
+        apk add --no-cache bash coreutils
+        ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
+        mv psp-pacman.db.tar.gz psp-pacman.db
+        mv psp-pacman.files.tar.gz psp-pacman.files
+        tar -cvf repo.tar psp-pacman.db psp-pacman.files *.pkg.tar.gz pspdev-*.tar.gz
+    - name: Upload repo artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: github-pages
+        path: repo.tar
+
+
+  publish-repo:
+    if: contains(github.ref,'refs/heads/master')
+    needs: [package-repo]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
 
   dispatch:
     if: contains(github.ref,'refs/heads/master')
-    needs: [build, build-VM]
+    needs: [publish-repo]
     runs-on: ubuntu-latest
   
     steps:
