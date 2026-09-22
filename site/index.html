@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PSP Pacman</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>PSP Pacman</h1>
+        <p>
+            This is the repository for the package manager for the Playstation Portable SDK called <a href="https://github.com/PSPDEV">PSPDEV</a>.<br>
+            <br>
+            Packages can be installed using the following command:
+            <pre># psp-pacman -Sy package-name</pre>
+            Updating installed packages can be done using the following command:
+            <pre># psp-pacman -Syu</pre>
+        </p>
+        To download PSP Pacman pick the download link below for your platform:
+        <ul>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/alpine_x86_64/pspdev.tar.gz">alpine_x86_64</a>
+          </li>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/debian_x86_64/pspdev.tar.gz">debian_x86_64</a>
+          </li>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/fedora_x86_64/pspdev.tar.gz">fedora_x86_64</a>
+          </li>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/macos_arm64/pspdev.tar.gz">macos_arm64</a>
+          </li>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/macos_x86_64/pspdev.tar.gz">macos_x86_64</a>
+          </li>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/ubuntu_aarch64/pspdev.tar.gz">ubuntu_aarch64</a>
+          </li>
+          <li>
+            <a href="https://pspdev.github.io/psv-pacman/ubuntu_x86_64/pspdev.tar.gz">ubuntu_x86_64</a>
+          </li>
+        </ul>
+        <p>
+          After downloading, set the following variables in the command line to make it usable:
+          <pre># export PSPDEV="pspdev"
+# export PATH="${PATH}:${PSPDEV}/bin"</pre>
+          Replace "pspdev" with the full path to the extracted pspdev directory. The export commands can also be added to "~/.bashrc" on Linux or "~/.zprofile" on MacOS to make them available permanently. On Windows, use Ubuntu in WSL to use this package.
+        </p>
+        <p>Source on <a href="https://github.com/pspdev/psp-pacman">GitHub</a></p>
+    </body>
+</html>

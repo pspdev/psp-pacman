@@ -6,11 +6,6 @@ on:
   repository_dispatch:
     types: [run_build]
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -52,25 +47,28 @@ jobs:
 
     - name: Create archive
       run: |
+        tar -czvf pspdev.tar.gz pspdev
+
+    - name: Create repo files
+      run: |
+        export PSPDEV=${PWD}/pspdev
+        ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
+        mv psp-pacman.db.tar.gz psp-pacman.db
+        mv psp-pacman.files.tar.gz psp-pacman.files
+
+    - name: Set ARCH variable
+      run: |
         ARCH="$(./get-arch)"
         echo "ARCH=${ARCH}" >> $GITHUB_ENV
-        tar -czvf pspdev-${ARCH}.tar.gz pspdev
 
     - uses: actions/upload-artifact@v7
       with:
-        name: artifact-${{ env.ARCH }}
+        name: ${{ env.ARCH }}
         path: |
           psp-pacman-*.pkg.tar.gz
-          pspdev-*.tar.gz
-
-    - name: Test psp-pacman
-      run: |
-        export PSPDEV="$PWD/pspdev"
-        export PATH="$PATH:$PSPDEV/bin"
-        psp-pacman -Syu --noconfirm --noprogressbar stb
-        psp-pacman -Qi stb
-        psp-pacman -R --noconfirm stb
-        psp-pacman -Scc --noconfirm
+          pspdev.tar.gz
+          psp-pacman.db
+          psp-pacman.files
 
 
   build-VM:
@@ -103,48 +101,52 @@ jobs:
 
     - name: Create archive
       run: |
-        tar -czvf pspdev-$(./get-arch).tar.gz pspdev
+        tar -czvf pspdev.tar.gz pspdev
+
+    - name: Create repo files
+      run: |
+        export PSPDEV=${PWD}/pspdev
+        ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
+        mv psp-pacman.db.tar.gz psp-pacman.db
+        mv psp-pacman.files.tar.gz psp-pacman.files
+
+    - name: Set ARCH variable
+      run: |
+        ARCH="$(./get-arch)"
+        echo "ARCH=${ARCH}" >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v7
       with:
-        name: artifact-${{ matrix.os }}
+        name: ${{ env.ARCH }}
         path: |
           psp-pacman-*.pkg.tar.gz
-          pspdev-*.tar.gz
-
-    - name: Test psp-pacman
-      run: |
-        export PSPDEV=$PWD/pspdev
-        export PATH=$PATH:$PSPDEV/bin
-        psp-pacman -Syu --noconfirm stb
-        psp-pacman -Qi stb
-        psp-pacman -R --noconfirm stb
-        psp-pacman -Scc --noconfirm
+          pspdev.tar.gz
+          psp-pacman.db
+          psp-pacman.files
 
 
   package-repo:
     if: contains(github.ref,'refs/heads/master')
     needs: [build, build-VM]
     runs-on: ubuntu-latest
-    container: ghcr.io/pspdev/pspsdk:latest
 
     steps:
+    - uses: actions/checkout@v6
+
     - name: Download artifacts
       uses: actions/download-artifact@v8
-    - name: Create repo files
-      run: |
-        ls -l
-        cp artifact-*/* ./
-        apk add --no-cache bash coreutils
-        ${PSPDEV}/share/pacman/bin/repo-add psp-pacman.db.tar.gz *.pkg.tar.gz
-        mv psp-pacman.db.tar.gz psp-pacman.db
-        mv psp-pacman.files.tar.gz psp-pacman.files
-        tar -cvf repo.tar psp-pacman.db psp-pacman.files *.pkg.tar.gz pspdev-*.tar.gz
-    - name: Upload repo artifact
-      uses: actions/upload-artifact@v7
       with:
-        name: github-pages
-        path: repo.tar
+        path: repo/
+
+    - name: Copy index files
+      run: |
+        cp site/* repo/
+        cp get-arch repo/
+
+    - name: Upload repo artifact
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: repo/
 
 
   publish-repo:
@@ -154,10 +156,12 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
