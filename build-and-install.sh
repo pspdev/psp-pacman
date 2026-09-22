@@ -27,6 +27,10 @@ fi
 ## Clean up from previous builds
 rm -rf temp_build pkg src psp-pacman-*-*.pkg.tar.gz
 
+# Set variables needed when building the package
+export MAKEPKG_CONF="$WORKDIR/makepkg.conf"
+export CARCH="$(./get-arch)"
+
 ## Install makepkg from source if it isn't already available and build the package
 if ! which makepkg > /dev/null; then
     echo "Did not find makepkg, downloading and building pacman from source"
@@ -44,12 +48,12 @@ if ! which makepkg > /dev/null; then
     cd "$WORKDIR"
     export PATH="${pkgdir}/share/pacman/bin:${PATH}"
     if (( EUID == 0 )); then
-        CARCH="$(./get-arch)" PSPDEV="${pkgdir}" makepkg -p PSPBUILD --asroot .
+        PSPDEV="${pkgdir}" makepkg -p PSPBUILD --asroot .
     else
-        CARCH="$(./get-arch)" PSPDEV="${pkgdir}" makepkg -p PSPBUILD .
+        PSPDEV="${pkgdir}" makepkg -p PSPBUILD .
     fi
 else
-    CARCH="$(./get-arch)" makepkg -p PSPBUILD .
+    makepkg -p PSPBUILD .
 fi
 
 ## Create the required directories for installation

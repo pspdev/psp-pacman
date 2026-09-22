@@ -1,0 +1,25 @@
+body {
+    font-family: sans-serif;
+    color: #e6e1e8;
+    background-color: #27262b;
+}
+
+a {
+    color: rgb(93.8194444444, 161.0416666667, 251.1805555556);
+    text-decoration: underline;
+    text-decoration-color: #44434d;
+    text-underline-offset: 2px;
+}
+
+a::hover {
+    text-decoration-color: rgba(93.8194444444, 161.0416666667, 251.1805555556, 0.45);
+}
+
+li {
+    padding: 3px;
+}
+
+pre {
+    background-color: #0d1117;
+    font-size: 16px;
+}
